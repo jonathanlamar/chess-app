@@ -1,21 +1,26 @@
-import React from "react";
 import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
+import LoggyComponent from "./utils/loggyComponent";
+import { Piece, Player } from "./constants";
 import { initialiseChessBoard } from "./utils";
-import Piece from "./pieces";
 
-export class App extends React.Component {
+export default class App extends LoggyComponent {
   constructor() {
     super();
     this.squares = initialiseChessBoard();
+    this.whoseTurn = Player.WHITE;
+    this.whiteCapturedPieces = [];
+    this.blackCapturedPieces = [];
+    console.log("Initialized App");
+    console.log(this);
   }
 
-  // Will this force a re-render?
   handleStop = (r, c, newR, newC) => {
-    // TODO
     this.squares[newR][newC] = this.squares[r][c];
-    this.squares[r][c] = Piece.None;
+    this.squares[r][c] = Piece.NONE;
+
+    return { r: newR, c: newC };
   };
 
   render() {
@@ -23,15 +28,17 @@ export class App extends React.Component {
       <div>
         <div className="game">
           <div className="game-board">
-            <Board squares={this.squares} handleStop={this.handleStop} />
+            <Board squares={this.squares} handleStopFn={this.handleStop} />
           </div>
           <div className="game-info">
-            <GameInfo />
+            <GameInfo
+              whoseTurn={this.whoseTurn}
+              whiteCapturedPieces={this.whiteCapturedPieces}
+              blackCapturedPieces={this.blackCapturedPieces}
+            />
           </div>
         </div>
       </div>
     );
   }
 }
-
-export default App;

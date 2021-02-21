@@ -1,40 +1,42 @@
-import React from "react";
-
 import "../index.css";
 import Square from "./square.js";
+import LoggyComponent from "../utils/loggyComponent";
 import { getLinearIndex, getSquareShade } from "../utils";
 
-export default class Board extends React.Component {
-  constructor(props) {
-    super();
-    this.squares = props.squares;
-    this.handleStop = props.handleStop;
-  }
-
+export default class Board extends LoggyComponent {
   renderSquare(r, c) {
+    const linearIndex = getLinearIndex(r, c);
+    const shade = getSquareShade(r, c);
+
     return (
       <Square
-        key={getLinearIndex(r, c)}
-        value={this.squares[r][c]}
-        shade={getSquareShade(r, c)}
-        onStop={this.onStop}
+        key={linearIndex}
+        keyVal={linearIndex}
+        squareVal={this.props.squares[r][c]}
+        shade={shade}
+        startPos={{ r, c }}
+        handleStopFn={this.props.handleStopFn}
       />
     );
   }
 
   render() {
-    const squares = [];
+    const rows = [];
 
     for (let r = 0; r < 8; r++) {
-      const row = [];
+      const squares = [];
 
       for (let c = 0; c < 8; c++) {
-        row.push(this.renderSquare(r, c));
+        squares.push(this.renderSquare(r, c));
       }
 
-      squares.push(<div className="board-row">{row}</div>);
+      rows.push(
+        <div className="board-row" key={r}>
+          {squares}
+        </div>
+      );
     }
 
-    return <div>{squares}</div>;
+    return <div>{rows}</div>;
   }
 }

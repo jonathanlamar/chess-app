@@ -20,17 +20,16 @@ ol, ul {
 
 .square {
   background: transparent;
-  border: 1px solid transparent;
+  background-size: cover;
+  border: 0px solid transparent;
   float: left;
   font-size: 24px;
   font-weight: bold;
   line-height: 34px;
-  height: 48px;
-  margin-right: -1px;
-  margin-top: -1px;
+  margin-right: 0px;
+  margin-top: 0px;
   padding: 0;
   text-align: center;
-  width: 48px;
 }
 
 .square:focus {
