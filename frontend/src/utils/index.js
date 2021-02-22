@@ -1,4 +1,4 @@
-import { Piece } from "../constants";
+import { Piece, Player } from "../constants";
 
 export function getLinearIndex(r, c) {
   return r * 8 + c;
@@ -41,48 +41,147 @@ export function getSquareShade(r, c) {
   return r % 2 === c % 2 ? "light-square" : "dark-square";
 }
 
-export function initialiseChessBoard() {
-  // TODO: Compact representations will be needed for loading and saving games.
-  // return decodeFromWhatsIt();
+export function parseFenString(fenString) {
+  // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+  //
+  // Each rank is described, starting with rank 8 and ending with rank 1;
+  // within each rank, the contents of each square are described from file "a"
+  // through file "h". Following the Standard Algebraic Notation (SAN), each
+  // piece is identified by a single letter taken from the standard English
+  // names (pawn = "P", knight = "N", bishop = "B", rook = "R", queen = "Q" and
+  // king = "K"). White pieces are designated using upper-case letters
+  // ("PNBRQK") while black pieces use lowercase ("pnbrqk"). Empty squares are
+  // noted using digits 1 through 8 (the number of empty squares), and "/"
+  // separates ranks.
+  //
+  // Here's the FEN for the starting position:
+  //
+  // Here's the FEN for the starting position:
+  //
+  // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+  // And after the move 1.e4:
+  //
+  // rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+  // And then after 1...c5:
+  //
+  // rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2
+  // And then after 2.Nf3:
+  //
+  // rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
 
-  const squares = Array(8);
-  for (let r = 0; r < 8; r++) {
-    squares[r] = new Array(8).fill(Piece.NONE);
+  const [
+    boardRep,
+    toMove,
+    castleStatusStr,
+    enPassantTarget,
+    halfMoveClock,
+    fullMoveCount,
+  ] = fenString.split(" ");
+
+  return {
+    squares: parseFenBoardRep(boardRep),
+    whoseMove: toMove === "w" ? Player.WHITE : Player.BLACK,
+    castleStatus: getCastleStatus(castleStatusStr),
+    enPassantTargetPos:
+      enPassantTarget === "-" ? null : fileRankToPos(enPassantTarget),
+    halfMoveClockVal: parseInt(halfMoveClock),
+    fullMoveCountVal: parseInt(fullMoveCount),
+  };
+}
+
+function parseFenBoardRep(boardRep) {
+  return boardRep.split("/").map(processRowString).map(parseProcessedRowString);
+}
+
+function parseProcessedRowString(processedRowString) {
+  // Processes just the board part of the FEN string
+
+  const rowSquares = Array(8).fill(Piece.NONE);
+
+  for (let c = 0; c < 8; c++) {
+    switch (processedRowString[c]) {
+      case "p":
+        rowSquares[c] = Piece.BLACK | Piece.PAWN;
+        break;
+      case "r":
+        rowSquares[c] = Piece.BLACK | Piece.ROOK;
+        break;
+      case "n":
+        rowSquares[c] = Piece.BLACK | Piece.KNIGHT;
+        break;
+      case "b":
+        rowSquares[c] = Piece.BLACK | Piece.BISHOP;
+        break;
+      case "q":
+        rowSquares[c] = Piece.BLACK | Piece.QUEEN;
+        break;
+      case "k":
+        rowSquares[c] = Piece.BLACK | Piece.KING;
+        break;
+      case "P":
+        rowSquares[c] = Piece.WHITE | Piece.PAWN;
+        break;
+      case "R":
+        rowSquares[c] = Piece.WHITE | Piece.ROOK;
+        break;
+      case "N":
+        rowSquares[c] = Piece.WHITE | Piece.KNIGHT;
+        break;
+      case "B":
+        rowSquares[c] = Piece.WHITE | Piece.BISHOP;
+        break;
+      case "Q":
+        rowSquares[c] = Piece.WHITE | Piece.QUEEN;
+        break;
+      case "K":
+        rowSquares[c] = Piece.WHITE | Piece.KING;
+        break;
+      case "1":
+        rowSquares[c] = Piece.NONE;
+        break;
+      default:
+        throw "Incorrect FEN VALUE";
+    }
   }
 
-  squares[0][0] = Piece.BLACK | Piece.ROOK;
-  squares[0][1] = Piece.BLACK | Piece.KNIGHT;
-  squares[0][2] = Piece.BLACK | Piece.BISHOP;
-  squares[0][3] = Piece.BLACK | Piece.QUEEN;
-  squares[0][4] = Piece.BLACK | Piece.KING;
-  squares[0][5] = Piece.BLACK | Piece.BISHOP;
-  squares[0][6] = Piece.BLACK | Piece.KNIGHT;
-  squares[0][7] = Piece.BLACK | Piece.ROOK;
-  squares[1][0] = Piece.BLACK | Piece.PAWN;
-  squares[1][1] = Piece.BLACK | Piece.PAWN;
-  squares[1][2] = Piece.BLACK | Piece.PAWN;
-  squares[1][3] = Piece.BLACK | Piece.PAWN;
-  squares[1][4] = Piece.BLACK | Piece.PAWN;
-  squares[1][5] = Piece.BLACK | Piece.PAWN;
-  squares[1][6] = Piece.BLACK | Piece.PAWN;
-  squares[1][7] = Piece.BLACK | Piece.PAWN;
+  return rowSquares;
+}
 
-  squares[6][0] = Piece.WHITE | Piece.PAWN;
-  squares[6][1] = Piece.WHITE | Piece.PAWN;
-  squares[6][2] = Piece.WHITE | Piece.PAWN;
-  squares[6][3] = Piece.WHITE | Piece.PAWN;
-  squares[6][4] = Piece.WHITE | Piece.PAWN;
-  squares[6][5] = Piece.WHITE | Piece.PAWN;
-  squares[6][6] = Piece.WHITE | Piece.PAWN;
-  squares[6][7] = Piece.WHITE | Piece.PAWN;
-  squares[7][0] = Piece.WHITE | Piece.ROOK;
-  squares[7][1] = Piece.WHITE | Piece.KNIGHT;
-  squares[7][2] = Piece.WHITE | Piece.BISHOP;
-  squares[7][3] = Piece.WHITE | Piece.QUEEN;
-  squares[7][4] = Piece.WHITE | Piece.KING;
-  squares[7][5] = Piece.WHITE | Piece.BISHOP;
-  squares[7][6] = Piece.WHITE | Piece.KNIGHT;
-  squares[7][7] = Piece.WHITE | Piece.ROOK;
+function processRowString(rowString) {
+  // Replace numbers with 1 repeated that number of times, e.g.,
+  // the number 4 is replaces with 1111
 
-  return squares;
+  var newString = "";
+  for (let i = 0; i < rowString.length; i++) {
+    const c = rowString[i];
+    const maybeNum = parseInt(c);
+
+    if (!isNaN(maybeNum)) {
+      newString = newString + "1".repeat(maybeNum);
+    } else {
+      newString = newString + c;
+    }
+  }
+
+  return newString;
+}
+
+function getCastleStatus(castleStatusStr) {
+  return {
+    whiteQueen: castleStatusStr.indexOf("Q") !== -1,
+    whiteKing: castleStatusStr.indexOf("K") !== -1,
+    blackQueen: castleStatusStr.indexOf("q") !== -1,
+    blackKing: castleStatusStr.indexOf("k") !== -1,
+  };
+}
+
+function fileRankToPos(fileRank) {
+  return {
+    r: "abcdefgh".indexOf(fileRank[0]),
+    c: 8 - parseInt(fileRank[1]),
+  };
+}
+
+export function initialiseChessBoard() {
+  return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
