@@ -1,7 +1,9 @@
+import React from "react";
 import "../index.css";
 import Square from "./square.js";
 import LoggyComponent from "../utils/loggyComponent";
 import { getLinearIndex, getSquareShade } from "../utils";
+import { Piece, GlobalParams } from "../constants";
 
 export default class Board extends LoggyComponent {
   renderSquare(r, c) {
@@ -21,22 +23,26 @@ export default class Board extends LoggyComponent {
   }
 
   render() {
-    const rows = [];
+    const squares = [];
 
     for (let r = 0; r < 8; r++) {
-      const squares = [];
-
       for (let c = 0; c < 8; c++) {
-        squares.push(this.renderSquare(r, c));
+        if (this.props.squares[r][c] !== Piece.NONE) {
+          squares.push(this.renderSquare(r, c));
+        }
       }
-
-      rows.push(
-        <div className="board-row" key={r}>
-          {squares}
-        </div>
-      );
     }
 
-    return <div>{rows}</div>;
+    return (
+      <div
+        className="board"
+        style={{
+          height: GlobalParams.BOARD_SIZE,
+          width: GlobalParams.BOARD_SIZE,
+        }}
+      >
+        {squares}
+      </div>
+    );
   }
 }

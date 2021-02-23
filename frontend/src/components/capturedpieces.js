@@ -1,6 +1,6 @@
-import LoggyComponent from "../utils/loggyComponent";
+import React from "react";
 
-export default class CapturedPieces extends LoggyComponent {
+export default class CapturedPieces extends React.Component {
   render() {
     return (
       <div>

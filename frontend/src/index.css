@@ -1,6 +1,6 @@
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
-  margin: 20px;
+  margin: 0px;
   background-color: #ECECEA;
 }
 
@@ -8,10 +8,12 @@ ol, ul {
   padding-left: 30px;
 }
 
-.board-row:after {
-  clear: both;
-  content: "";
-  display: table;
+.board {
+  background-size: cover;
+  background-image: url("images/background.png");
+  border: 0px solid black;
+  margin: 0px;
+  padding: 0px;
 }
 
 .status {
@@ -21,23 +23,10 @@ ol, ul {
 .square {
   background: transparent;
   background-size: cover;
-  border: 0px solid transparent;
   float: left;
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 34px;
-  margin-right: 0px;
-  margin-top: 0px;
-  padding: 0;
-  text-align: center;
-}
-
-.square:focus {
-  outline: none;
-}
-
-.kbd-navigation .square:focus {
-  background: #ddd;
+  border: 0px solid black;
+  margin: 0px;
+  padding: 0px;
 }
 
 .game-info {
@@ -52,17 +41,20 @@ ol, ul {
 
 
 
-/*Board color scheme Wheat from http://omgchess.blogspot.com/2015/09/chess-board-color-schemes.html*/
+.orange-square{
+  background-color: RGB(211,123,75);
+}
+
 .dark-square{
-background-color: RGB(187,190,100);
+  background-color: RGB(187,190,100);
 }
 
 .light-square{
-    background-color: RGB(234,240,206);
+  background-color: RGB(234,240,206);
 }
 
 .transparent-square{
-    background-color: RGBA(255,255,255,0);
+  background-color: RGBA(255,255,255,0);
 }
 
 #player-turn-box{

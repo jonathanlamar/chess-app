@@ -18,4 +18,5 @@ export class Piece {
 
 export class GlobalParams {
   static TILE_SIZE = 96;
+  static BOARD_SIZE = GlobalParams.TILE_SIZE * 8;
 }

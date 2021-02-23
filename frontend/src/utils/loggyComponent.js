@@ -7,7 +7,7 @@ export default class LoggyComponent extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log("Updated", this);
-    console.log("Previoud state:", prevProps, prevState);
+    console.log("Previous state:", prevProps, prevState);
   }
 
   componentWillMount() {

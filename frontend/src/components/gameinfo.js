@@ -1,8 +1,8 @@
+import React from "react";
 import CapturedPieces from "./capturedpieces";
-import LoggyComponent from "../utils/loggyComponent";
 import { Player } from "../constants";
 
-export default class GameInfo extends LoggyComponent {
+export default class GameInfo extends React.Component {
   render() {
     const playerString =
       this.props.whoseTurn === Player.WHITE ? "White" : "Black";

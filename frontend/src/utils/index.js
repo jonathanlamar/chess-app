@@ -1,4 +1,4 @@
-import { Piece, Player } from "../constants";
+import { Piece, Player, GlobalParams } from "../constants";
 
 export function getLinearIndex(r, c) {
   return r * 8 + c;
@@ -41,6 +41,28 @@ export function getSquareShade(r, c) {
   return r % 2 === c % 2 ? "light-square" : "dark-square";
 }
 
+export function rcToXy(r, c) {
+  return {
+    x: c * GlobalParams.TILE_SIZE,
+    y: r * GlobalParams.TILE_SIZE,
+  };
+}
+
+export function xyToRc(x, y) {
+  return {
+    r: Math.round(y / GlobalParams.TILE_SIZE),
+    c: Math.round(x / GlobalParams.TILE_SIZE),
+  };
+}
+
+export function getPieceColor(piece) {
+  return piece < 16 ? Piece.WHITE : Piece.BLACK;
+}
+
+export function initialiseChessBoard() {
+  return parseFenBoardRep("P7/P7/8/8/8/8/8/8");
+  // return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+}
 export function parseFenString(fenString) {
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   //
@@ -180,8 +202,4 @@ function fileRankToPos(fileRank) {
     r: "abcdefgh".indexOf(fileRank[0]),
     c: 8 - parseInt(fileRank[1]),
   };
-}
-
-export function initialiseChessBoard() {
-  return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
