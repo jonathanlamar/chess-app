@@ -1,4 +1,4 @@
-import { Piece } from "../constants";
+import { Pieces } from "../constants";
 
 // Winging it for now.  I will probably totally refactor this.
 export default class ValidMoves {
@@ -32,7 +32,7 @@ export default class ValidMoves {
 
   static isJumpPiece(piece) {
     return (
-      piece === Piece.PAWN || piece === Piece.KNIGHT || piece === Piece.KING
+      piece === Pieces.PAWN || piece === Pieces.KNIGHT || piece === Pieces.KING
     );
   }
 
@@ -40,11 +40,11 @@ export default class ValidMoves {
   static allPosibleJumpMoves(piece, r, c) {
     var deltas, moves;
 
-    if (piece === Piece.PAWN) {
+    if (piece === Pieces.PAWN) {
       deltas = ValidMoves.JUMP_DELTAS.pawn;
-    } else if (piece === Piece.KNIGHT) {
+    } else if (piece === Pieces.KNIGHT) {
       deltas = ValidMoves.JUMP_DELTAS.knight;
-    } else if (piece === Piece.KING) {
+    } else if (piece === Pieces.KING) {
       deltas = ValidMoves.JUMP_DELTAS.KING;
     } else {
       throw "Piece is not a jumping piece";

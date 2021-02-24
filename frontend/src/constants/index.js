@@ -3,7 +3,7 @@ export class Player {
   static BLACK = 16;
 }
 
-export class Piece {
+export class Pieces {
   static NONE = 0;
   static KING = 1;
   static QUEEN = 2;

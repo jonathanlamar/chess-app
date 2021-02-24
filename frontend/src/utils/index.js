@@ -1,35 +1,35 @@
-import { Piece, Player, GlobalParams } from "../constants";
+import { Pieces, Player, GlobalParams } from "../constants";
 
 export function getLinearIndex(r, c) {
   return r * 8 + c;
 }
 
 export function getPieceImage(squareVal) {
-  if (squareVal === (Piece.WHITE | Piece.PAWN)) {
+  if (squareVal === (Pieces.WHITE | Pieces.PAWN)) {
     return "https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg";
-  } else if (squareVal === (Piece.WHITE | Piece.KNIGHT)) {
+  } else if (squareVal === (Pieces.WHITE | Pieces.KNIGHT)) {
     return "https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg";
-  } else if (squareVal === (Piece.WHITE | Piece.ROOK)) {
+  } else if (squareVal === (Pieces.WHITE | Pieces.ROOK)) {
     return "https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg";
-  } else if (squareVal === (Piece.WHITE | Piece.BISHOP)) {
+  } else if (squareVal === (Pieces.WHITE | Pieces.BISHOP)) {
     return "https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg";
-  } else if (squareVal === (Piece.WHITE | Piece.QUEEN)) {
+  } else if (squareVal === (Pieces.WHITE | Pieces.QUEEN)) {
     return "https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg";
-  } else if (squareVal === (Piece.WHITE | Piece.KING)) {
+  } else if (squareVal === (Pieces.WHITE | Pieces.KING)) {
     return "https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.PAWN)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.PAWN)) {
     return "https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.KNIGHT)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.KNIGHT)) {
     return "https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.ROOK)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.ROOK)) {
     return "https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.BISHOP)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.BISHOP)) {
     return "https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.QUEEN)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.QUEEN)) {
     return "https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg";
-  } else if (squareVal === (Piece.BLACK | Piece.KING)) {
+  } else if (squareVal === (Pieces.BLACK | Pieces.KING)) {
     return "https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg";
-  } else if (squareVal === Piece.NONE) {
+  } else if (squareVal === Pieces.NONE) {
     return null;
   } else {
     console.log("Error occured with getPieceImage.");
@@ -52,12 +52,12 @@ export function xyToRc(x, y) {
 }
 
 export function getPieceColor(piece) {
-  if (piece === Piece.NONE) {
-    return Piece.NONE; // TODO: Better way to handle NONE type
+  if (piece === Pieces.NONE) {
+    return Pieces.NONE; // TODO: Better way to handle NONE type
   } else if (piece < 16) {
-    return Piece.WHITE;
+    return Pieces.WHITE;
   } else {
-    return Piece.BLACK;
+    return Pieces.BLACK;
   }
 }
 
@@ -139,48 +139,48 @@ function processRowString(rowString) {
 function parseProcessedRowString(processedRowString) {
   // Processes just the board part of the FEN string
 
-  const rowSquares = Array(8).fill(Piece.NONE);
+  const rowSquares = Array(8).fill(Pieces.NONE);
 
   for (let c = 0; c < 8; c++) {
     switch (processedRowString[c]) {
       case "p":
-        rowSquares[c] = Piece.BLACK | Piece.PAWN;
+        rowSquares[c] = Pieces.BLACK | Pieces.PAWN;
         break;
       case "r":
-        rowSquares[c] = Piece.BLACK | Piece.ROOK;
+        rowSquares[c] = Pieces.BLACK | Pieces.ROOK;
         break;
       case "n":
-        rowSquares[c] = Piece.BLACK | Piece.KNIGHT;
+        rowSquares[c] = Pieces.BLACK | Pieces.KNIGHT;
         break;
       case "b":
-        rowSquares[c] = Piece.BLACK | Piece.BISHOP;
+        rowSquares[c] = Pieces.BLACK | Pieces.BISHOP;
         break;
       case "q":
-        rowSquares[c] = Piece.BLACK | Piece.QUEEN;
+        rowSquares[c] = Pieces.BLACK | Pieces.QUEEN;
         break;
       case "k":
-        rowSquares[c] = Piece.BLACK | Piece.KING;
+        rowSquares[c] = Pieces.BLACK | Pieces.KING;
         break;
       case "P":
-        rowSquares[c] = Piece.WHITE | Piece.PAWN;
+        rowSquares[c] = Pieces.WHITE | Pieces.PAWN;
         break;
       case "R":
-        rowSquares[c] = Piece.WHITE | Piece.ROOK;
+        rowSquares[c] = Pieces.WHITE | Pieces.ROOK;
         break;
       case "N":
-        rowSquares[c] = Piece.WHITE | Piece.KNIGHT;
+        rowSquares[c] = Pieces.WHITE | Pieces.KNIGHT;
         break;
       case "B":
-        rowSquares[c] = Piece.WHITE | Piece.BISHOP;
+        rowSquares[c] = Pieces.WHITE | Pieces.BISHOP;
         break;
       case "Q":
-        rowSquares[c] = Piece.WHITE | Piece.QUEEN;
+        rowSquares[c] = Pieces.WHITE | Pieces.QUEEN;
         break;
       case "K":
-        rowSquares[c] = Piece.WHITE | Piece.KING;
+        rowSquares[c] = Pieces.WHITE | Pieces.KING;
         break;
       case "1":
-        rowSquares[c] = Piece.NONE;
+        rowSquares[c] = Pieces.NONE;
         break;
       default:
         throw "Incorrect FEN VALUE";

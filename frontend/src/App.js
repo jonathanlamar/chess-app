@@ -3,7 +3,7 @@ import React from "react";
 import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
-import { Piece, Player } from "./constants";
+import { Pieces, Player } from "./constants";
 import { initialiseChessBoard, getPieceColor } from "./utils";
 import ValidMoves from "./utils/validMoves";
 
@@ -25,7 +25,7 @@ export default class App extends React.Component {
     }
 
     // Basic rules
-    if (targetLocVal === Piece.NONE) {
+    if (targetLocVal === Pieces.NONE) {
       return this.updateGameState(r, c, newR, newC);
     } else if (getPieceColor(targetLocVal) !== getPieceColor(movingPiece)) {
       return this.updateGameState(r, c, newR, newC);
@@ -43,16 +43,16 @@ export default class App extends React.Component {
     const targetLocVal = this.squares[newR][newC];
 
     if (
-      getPieceColor(movingPiece) === Piece.WHITE &&
-      targetLocVal !== Piece.NONE
+      getPieceColor(movingPiece) === Pieces.WHITE &&
+      targetLocVal !== Pieces.NONE
     ) {
       this.whiteCapturedPieces.push(targetLocVal);
-    } else if (targetLocVal !== Piece.NONE) {
+    } else if (targetLocVal !== Pieces.NONE) {
       this.blackCapturedPieces.push(targetLocVal);
     }
 
     this.squares[newR][newC] = movingPiece;
-    this.squares[r][c] = Piece.NONE;
+    this.squares[r][c] = Pieces.NONE;
 
     this.whoseTurn =
       this.whoseTurn === Player.WHITE ? Player.BLACK : Player.WHITE;
