@@ -20,6 +20,14 @@ export default class Piece extends React.Component {
     };
   }
 
+  handleStart = () => {
+    this.props.handleStartFn(
+      this.props.keyVal,
+      this.state.boardPosition.r,
+      this.state.boardPosition.c
+    );
+  };
+
   handleDrag = (e, ui) => {
     this.setState({
       dragDeltaPosition: {
@@ -58,8 +66,10 @@ export default class Piece extends React.Component {
       <Draggable
         position={this.state.dragDeltaPosition}
         bounds="parent"
+        onStart={this.handleStart}
         onDrag={this.handleDrag}
         onStop={this.handleStop}
+        disabled={!this.props.clickable}
       >
         <div className={"square transparent-square"} key={this.props.keyVal}>
           <img src={this.props.iconUrl} style={this.style} draggable="false" />

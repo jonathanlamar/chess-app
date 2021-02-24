@@ -1,3 +1,4 @@
+import { positionToFileRank } from ".";
 import { Pieces } from "../constants";
 
 // Winging it for now.  I will probably totally refactor this.
@@ -56,6 +57,20 @@ export default class ValidMoves {
 
       if (moveR >= 0 && moveR < 8 && moveC >= 0 && moveC < 8) {
         moves.push([moveR, moveC]);
+      }
+    }
+
+    return moves;
+  }
+
+  static allPossibleMoves(piece, r, c) {
+    var moves = [];
+
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        if (i !== r || j !== c) {
+          moves.push(positionToFileRank(i, j));
+        }
       }
     }
 

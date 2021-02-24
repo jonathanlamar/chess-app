@@ -2,7 +2,13 @@ import React from "react";
 
 import "../index.css";
 import Piece from "./piece.js";
-import { getPieceImage, getLinearIndex } from "../utils";
+import {
+  getPieceImage,
+  fileRankToPos,
+  getLinearIndex,
+  rcToXy,
+  getPieceColor,
+} from "../utils";
 import { Pieces, GlobalParams } from "../constants";
 
 export default class Board extends React.Component {
@@ -18,7 +24,29 @@ export default class Board extends React.Component {
         squareVal={squareVal}
         iconUrl={iconUrl}
         startPos={{ r, c }}
+        handleStartFn={this.props.handleStartFn}
         handleStopFn={this.props.handleStopFn}
+        clickable={this.props.whoseTurn === getPieceColor(squareVal)}
+      />
+    );
+  }
+
+  renderSquare(fileRank, className) {
+    const { r, c } = fileRankToPos(fileRank);
+    const { x, y } = rcToXy(r, c);
+
+    return (
+      <div
+        className={"square " + className}
+        key={100 + getLinearIndex(r, c)}
+        style={{
+          height: GlobalParams.TILE_SIZE,
+          width: GlobalParams.TILE_SIZE,
+          position: "absolute",
+          left: x + "px",
+          top: y + "px",
+          zIndex: 100 + getLinearIndex(r, c),
+        }}
       />
     );
   }
@@ -32,6 +60,18 @@ export default class Board extends React.Component {
           pieces.push(this.renderPiece(r, c));
         }
       }
+    }
+
+    if (this.props.mobilePieceHomeSquare !== "NONE") {
+      pieces.push(
+        this.renderSquare(this.props.mobilePieceHomeSquare, "home-square")
+      );
+    }
+
+    for (let i = 0; i < this.props.validMovesSquares.length; i++) {
+      pieces.push(
+        this.renderSquare(this.props.validMovesSquares[i], "move-square")
+      );
     }
 
     return (

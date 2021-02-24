@@ -4,7 +4,11 @@ import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
 import { Pieces, Player } from "./constants";
-import { initialiseChessBoard, getPieceColor } from "./utils";
+import {
+  initialiseChessBoard,
+  getPieceColor,
+  positionToFileRank,
+} from "./utils";
 import ValidMoves from "./utils/validMoves";
 
 export default class App extends React.Component {
@@ -14,14 +18,27 @@ export default class App extends React.Component {
     this.whoseTurn = Player.WHITE;
     this.whiteCapturedPieces = [];
     this.blackCapturedPieces = [];
+    // When a piece is lifted, this holds its original board position in
+    // rank-file notation, i.e., e5 for [4, 3].
+    this.mobilePieceHomeSquare = "NONE";
+    // When a piece is lifted, this holds all possible destination squares for
+    // the piece in rank-file notation.
+    this.validMovesSquares = [];
   }
+
+  handleStart = (piece, r, c) => {
+    this.mobilePieceHomeSquare = positionToFileRank(r, c);
+    this.validMovesSquares = ValidMoves.allPossibleMoves(piece, r, c);
+    this.forceUpdate();
+  };
 
   handleStop = (r, c, newR, newC) => {
     const movingPiece = this.squares[r][c];
     const targetLocVal = this.squares[newR][newC];
 
     if (getPieceColor(movingPiece) !== this.whoseTurn) {
-      return { r, c }; // Can't move other players pieces
+      // Can't move other players pieces
+      return this.updateGameState(r, c, r, c);
     }
 
     // Basic rules
@@ -35,7 +52,11 @@ export default class App extends React.Component {
   };
 
   updateGameState = (r, c, newR, newC) => {
+    this.mobilePieceHomeSquare = "NONE";
+    this.validMovesSquares = [];
+
     if (r === newR && c === newC) {
+      this.forceUpdate();
       return { r, c };
     }
 
@@ -64,7 +85,14 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="game">
-        <Board squares={this.squares} handleStopFn={this.handleStop} />
+        <Board
+          squares={this.squares}
+          handleStartFn={this.handleStart}
+          handleStopFn={this.handleStop}
+          whoseTurn={this.whoseTurn}
+          mobilePieceHomeSquare={this.mobilePieceHomeSquare}
+          validMovesSquares={this.validMovesSquares}
+        />
         <GameInfo
           whoseTurn={this.whoseTurn}
           whiteCapturedPieces={this.whiteCapturedPieces}

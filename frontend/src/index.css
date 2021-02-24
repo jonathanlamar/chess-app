@@ -21,7 +21,6 @@ ol, ul {
 }
 
 .square {
-  background: transparent;
   background-size: cover;
   float: left;
   border: 0px solid black;
@@ -41,8 +40,12 @@ ol, ul {
 
 
 
-.orange-square{
-  background-color: RGB(211,123,75);
+.home-square{
+  background-color: RGB(211,123,75,0.8);
+}
+
+.move-square{
+  background-color: RGB(130, 220, 0, 0.8);
 }
 
 .dark-square{

@@ -32,8 +32,7 @@ export function getPieceImage(squareVal) {
   } else if (squareVal === Pieces.NONE) {
     return null;
   } else {
-    console.log("Error occured with getPieceImage.");
-    console.log("squareVal = ", squareVal);
+    throw "Error occured with getPieceImage.";
   }
 }
 
@@ -62,9 +61,10 @@ export function getPieceColor(piece) {
 }
 
 export function initialiseChessBoard() {
-  // return parseFenBoardRep("P7/n7/8/8/8/8/8/8"); // For testing
-  return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+  return parseFenBoardRep("P7/n7/8/8/8/8/8/8"); // For testing
+  // return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
+
 export function parseFenString(fenString) {
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   //
@@ -199,9 +199,13 @@ function getCastleStatus(castleStatusStr) {
   };
 }
 
-function fileRankToPos(fileRank) {
+export function fileRankToPos(fileRank) {
   return {
     r: "abcdefgh".indexOf(fileRank[0]),
     c: 8 - parseInt(fileRank[1]),
   };
+}
+
+export function positionToFileRank(r, c) {
+  return "abcdefgh"[r] + (8 - c).toString();
 }
