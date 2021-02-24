@@ -5,7 +5,7 @@ import "../index.css";
 import { rcToXy, xyToRc } from "../utils";
 import { GlobalParams } from "../constants";
 
-export default class Square extends React.Component {
+export default class Piece extends React.Component {
   constructor(props) {
     super(props);
     this.state = {

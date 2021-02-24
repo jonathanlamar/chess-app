@@ -1,7 +1,7 @@
 import React from "react";
 
 import "../index.css";
-import Square from "./square.js";
+import Piece from "./piece.js";
 import { getPieceImage, getLinearIndex } from "../utils";
 import { Pieces, GlobalParams } from "../constants";
 
@@ -12,7 +12,7 @@ export default class Board extends React.Component {
     const iconUrl = getPieceImage(squareVal);
 
     return (
-      <Square
+      <Piece
         key={linearIndex}
         keyVal={linearIndex}
         squareVal={squareVal}
