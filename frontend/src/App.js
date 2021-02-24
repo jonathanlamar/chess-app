@@ -5,6 +5,7 @@ import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
 import { Piece, Player } from "./constants";
 import { initialiseChessBoard, getPieceColor } from "./utils";
+import ValidMoves from "./utils/validMoves";
 
 export default class App extends React.Component {
   constructor() {
