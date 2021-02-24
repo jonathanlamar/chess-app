@@ -37,10 +37,6 @@ export function getPieceImage(squareVal) {
   }
 }
 
-export function getSquareShade(r, c) {
-  return r % 2 === c % 2 ? "light-square" : "dark-square";
-}
-
 export function rcToXy(r, c) {
   return {
     x: c * GlobalParams.TILE_SIZE,
@@ -56,12 +52,18 @@ export function xyToRc(x, y) {
 }
 
 export function getPieceColor(piece) {
-  return piece < 16 ? Piece.WHITE : Piece.BLACK;
+  if (piece === Piece.NONE) {
+    return Piece.NONE; // TODO: Better way to handle NONE type
+  } else if (piece < 16) {
+    return Piece.WHITE;
+  } else {
+    return Piece.BLACK;
+  }
 }
 
 export function initialiseChessBoard() {
-  return parseFenBoardRep("P7/P7/8/8/8/8/8/8");
-  // return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+  // return parseFenBoardRep("P7/n7/8/8/8/8/8/8"); // For testing
+  return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
 export function parseFenString(fenString) {
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
@@ -113,6 +115,25 @@ export function parseFenString(fenString) {
 
 function parseFenBoardRep(boardRep) {
   return boardRep.split("/").map(processRowString).map(parseProcessedRowString);
+}
+
+function processRowString(rowString) {
+  // Replace numbers with 1 repeated that number of times, e.g.,
+  // the number 4 is replaces with 1111
+
+  var newString = "";
+  for (let i = 0; i < rowString.length; i++) {
+    const c = rowString[i];
+    const maybeNum = parseInt(c);
+
+    if (!isNaN(maybeNum)) {
+      newString = newString + "1".repeat(maybeNum);
+    } else {
+      newString = newString + c;
+    }
+  }
+
+  return newString;
 }
 
 function parseProcessedRowString(processedRowString) {
@@ -167,25 +188,6 @@ function parseProcessedRowString(processedRowString) {
   }
 
   return rowSquares;
-}
-
-function processRowString(rowString) {
-  // Replace numbers with 1 repeated that number of times, e.g.,
-  // the number 4 is replaces with 1111
-
-  var newString = "";
-  for (let i = 0; i < rowString.length; i++) {
-    const c = rowString[i];
-    const maybeNum = parseInt(c);
-
-    if (!isNaN(maybeNum)) {
-      newString = newString + "1".repeat(maybeNum);
-    } else {
-      newString = newString + c;
-    }
-  }
-
-  return newString;
 }
 
 function getCastleStatus(castleStatusStr) {

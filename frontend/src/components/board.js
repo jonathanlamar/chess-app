@@ -1,21 +1,22 @@
 import React from "react";
+
 import "../index.css";
 import Square from "./square.js";
-import LoggyComponent from "../utils/loggyComponent";
-import { getLinearIndex, getSquareShade } from "../utils";
+import { getPieceImage, getLinearIndex } from "../utils";
 import { Piece, GlobalParams } from "../constants";
 
-export default class Board extends LoggyComponent {
+export default class Board extends React.Component {
   renderSquare(r, c) {
     const linearIndex = getLinearIndex(r, c);
-    const shade = getSquareShade(r, c);
+    const squareVal = this.props.squares[r][c];
+    const iconUrl = getPieceImage(squareVal);
 
     return (
       <Square
         key={linearIndex}
         keyVal={linearIndex}
-        squareVal={this.props.squares[r][c]}
-        shade={shade}
+        squareVal={squareVal}
+        iconUrl={iconUrl}
         startPos={{ r, c }}
         handleStopFn={this.props.handleStopFn}
       />

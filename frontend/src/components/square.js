@@ -2,21 +2,21 @@ import React from "react";
 import Draggable from "react-draggable";
 
 import "../index.css";
-import { getPieceImage, rcToXy, xyToRc } from "../utils";
+import { rcToXy, xyToRc } from "../utils";
 import { GlobalParams } from "../constants";
 
 export default class Square extends React.Component {
   constructor(props) {
     super(props);
-    const iconUrl = getPieceImage(props.squareVal);
-    this.style = {
-      backgroundImage: "url('" + iconUrl + "')",
-      height: GlobalParams.TILE_SIZE,
-      width: GlobalParams.TILE_SIZE,
-    };
     this.state = {
       boardPosition: props.startPos,
       dragDeltaPosition: rcToXy(props.startPos.r, props.startPos.c),
+    };
+    this.style = {
+      height: GlobalParams.TILE_SIZE,
+      width: GlobalParams.TILE_SIZE,
+      position: "absolute",
+      zIndex: props.keyVal, // Give each piece a unique z index
     };
   }
 
@@ -31,7 +31,6 @@ export default class Square extends React.Component {
 
   handleStop = () => {
     const { boardPosition, dragDeltaPosition } = this.state;
-
     const { r: newR, c: newC } = xyToRc(
       dragDeltaPosition.x,
       dragDeltaPosition.y
@@ -62,17 +61,8 @@ export default class Square extends React.Component {
         onDrag={this.handleDrag}
         onStop={this.handleStop}
       >
-        <div
-          className={"square transparent-square"}
-          style={this.style}
-          key={this.props.keyVal}
-        >
-          <div>
-            {this.state.dragDeltaPosition.x},{this.state.dragDeltaPosition.y}
-          </div>
-          <div>
-            {this.state.boardPosition.r},{this.state.boardPosition.c}
-          </div>
+        <div className={"square transparent-square"} key={this.props.keyVal}>
+          <img src={this.props.iconUrl} style={this.style} draggable="false" />
         </div>
       </Draggable>
     );

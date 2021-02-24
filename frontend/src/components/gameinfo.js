@@ -1,4 +1,5 @@
 import React from "react";
+
 import CapturedPieces from "./capturedpieces";
 import { Player } from "../constants";
 
