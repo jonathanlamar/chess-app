@@ -41,11 +41,11 @@ export default class ValidMoves {
     var deltas, moves;
 
     if (piece === Piece.PAWN) {
-      deltas = JUMP_DELTAS.pawn;
+      deltas = ValidMoves.JUMP_DELTAS.pawn;
     } else if (piece === Piece.KNIGHT) {
-      deltas = JUMP_DELTAS.knight;
+      deltas = ValidMoves.JUMP_DELTAS.knight;
     } else if (piece === Piece.KING) {
-      deltas = JUMP_DELTAS.KING;
+      deltas = ValidMoves.JUMP_DELTAS.KING;
     } else {
       throw "Piece is not a jumping piece";
     }
