@@ -4,8 +4,8 @@ import "../index.css";
 import Piece from "./piece.js";
 import {
   getPieceImage,
-  fileRankToPos,
-  getLinearIndex,
+  fileRankToRc,
+  rcToLinearIndex,
   rcToXy,
   getPieceColor,
 } from "../utils";
@@ -13,7 +13,7 @@ import { Pieces, GlobalParams } from "../constants";
 
 export default class Board extends React.Component {
   renderPiece(r, c) {
-    const linearIndex = getLinearIndex(r, c);
+    const linearIndex = rcToLinearIndex(r, c);
     const squareVal = this.props.squares[r][c];
     const iconUrl = getPieceImage(squareVal);
 
@@ -32,20 +32,20 @@ export default class Board extends React.Component {
   }
 
   renderSquare(fileRank, className) {
-    const { r, c } = fileRankToPos(fileRank);
+    const { r, c } = fileRankToRc(fileRank);
     const { x, y } = rcToXy(r, c);
 
     return (
       <div
         className={"square " + className}
-        key={100 + getLinearIndex(r, c)}
+        key={100 + rcToLinearIndex(r, c)}
         style={{
           height: GlobalParams.TILE_SIZE,
           width: GlobalParams.TILE_SIZE,
           position: "absolute",
           left: x + "px",
           top: y + "px",
-          zIndex: 100 + getLinearIndex(r, c),
+          zIndex: 100 + rcToLinearIndex(r, c),
         }}
       />
     );

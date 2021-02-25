@@ -22,7 +22,7 @@ export default class Piece extends React.Component {
 
   handleStart = () => {
     this.props.handleStartFn(
-      this.props.keyVal,
+      this.props.squareVal,
       this.state.boardPosition.r,
       this.state.boardPosition.c
     );

@@ -4,11 +4,7 @@ import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
 import { Pieces, Player } from "./constants";
-import {
-  initialiseChessBoard,
-  getPieceColor,
-  positionToFileRank,
-} from "./utils";
+import { initialiseChessBoard, getPieceColor, rcToFileRank } from "./utils";
 import ValidMoves from "./utils/validMoves";
 
 export default class App extends React.Component {
@@ -27,8 +23,24 @@ export default class App extends React.Component {
   }
 
   handleStart = (piece, r, c) => {
-    this.mobilePieceHomeSquare = positionToFileRank(r, c);
-    this.validMovesSquares = ValidMoves.allPossibleMoves(piece, r, c);
+    this.mobilePieceHomeSquare = rcToFileRank(r, c);
+
+    if (ValidMoves.isJumpPiece(piece)) {
+      this.validMovesSquares = ValidMoves.allPosibleJumpMoves(
+        piece,
+        r,
+        c,
+        this.squares
+      );
+    } else {
+      this.validMovesSquares = ValidMoves.allPossibleSlideMoves(
+        piece,
+        r,
+        c,
+        this.squares
+      );
+    }
+
     this.forceUpdate();
   };
 
@@ -38,6 +50,11 @@ export default class App extends React.Component {
 
     if (getPieceColor(movingPiece) !== this.whoseTurn) {
       // Can't move other players pieces
+      return this.updateGameState(r, c, r, c);
+    }
+
+    // No op invalid moves
+    if (!this.validMovesSquares.includes(rcToFileRank(newR, newC))) {
       return this.updateGameState(r, c, r, c);
     }
 

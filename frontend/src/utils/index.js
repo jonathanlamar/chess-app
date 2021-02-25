@@ -1,7 +1,40 @@
 import { Pieces, Player, GlobalParams } from "../constants";
 
-export function getLinearIndex(r, c) {
+// TODO: Move these to a conversions class
+export function rcToLinearIndex(r, c) {
   return r * 8 + c;
+}
+
+export function linearIndexToRc(i) {
+  return {
+    r: Math.floor(i / 8),
+    c: i % 8,
+  };
+}
+
+export function fileRankToRc(fileRank) {
+  return {
+    r: "abcdefgh".indexOf(fileRank[0]),
+    c: 8 - parseInt(fileRank[1]),
+  };
+}
+
+export function rcToFileRank(r, c) {
+  return "abcdefgh"[r] + (8 - c).toString();
+}
+
+export function rcToXy(r, c) {
+  return {
+    x: c * GlobalParams.TILE_SIZE,
+    y: r * GlobalParams.TILE_SIZE,
+  };
+}
+
+export function xyToRc(x, y) {
+  return {
+    r: Math.round(y / GlobalParams.TILE_SIZE),
+    c: Math.round(x / GlobalParams.TILE_SIZE),
+  };
 }
 
 export function getPieceImage(squareVal) {
@@ -36,20 +69,7 @@ export function getPieceImage(squareVal) {
   }
 }
 
-export function rcToXy(r, c) {
-  return {
-    x: c * GlobalParams.TILE_SIZE,
-    y: r * GlobalParams.TILE_SIZE,
-  };
-}
-
-export function xyToRc(x, y) {
-  return {
-    r: Math.round(y / GlobalParams.TILE_SIZE),
-    c: Math.round(x / GlobalParams.TILE_SIZE),
-  };
-}
-
+// TODO: Move to Pieces
 export function getPieceColor(piece) {
   if (piece === Pieces.NONE) {
     return Pieces.NONE; // TODO: Better way to handle NONE type
@@ -60,8 +80,12 @@ export function getPieceColor(piece) {
   }
 }
 
+export function getPieceType(piece) {
+  return piece % 8;
+}
+
 export function initialiseChessBoard() {
-  return parseFenBoardRep("P7/n7/8/8/8/8/8/8"); // For testing
+  return parseFenBoardRep("N7/np6/8/8/8/8/8/2P4k1"); // For testing
   // return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
 
@@ -107,7 +131,7 @@ export function parseFenString(fenString) {
     whoseMove: toMove === "w" ? Player.WHITE : Player.BLACK,
     castleStatus: getCastleStatus(castleStatusStr),
     enPassantTargetPos:
-      enPassantTarget === "-" ? null : fileRankToPos(enPassantTarget),
+      enPassantTarget === "-" ? null : fileRankToRc(enPassantTarget),
     halfMoveClockVal: parseInt(halfMoveClock),
     fullMoveCountVal: parseInt(fullMoveCount),
   };
@@ -197,15 +221,4 @@ function getCastleStatus(castleStatusStr) {
     blackQueen: castleStatusStr.indexOf("q") !== -1,
     blackKing: castleStatusStr.indexOf("k") !== -1,
   };
-}
-
-export function fileRankToPos(fileRank) {
-  return {
-    r: "abcdefgh".indexOf(fileRank[0]),
-    c: 8 - parseInt(fileRank[1]),
-  };
-}
-
-export function positionToFileRank(r, c) {
-  return "abcdefgh"[r] + (8 - c).toString();
 }
