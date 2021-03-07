@@ -6,6 +6,7 @@ import GameInfo from "./components/gameinfo.js";
 import { Pieces, Player } from "./constants";
 import { initialiseChessBoard, getPieceColor, rcToFileRank } from "./utils";
 import ValidMoves from "./utils/validMoves";
+import * as api from "./api";
 
 export default class App extends React.Component {
   constructor() {
@@ -44,9 +45,13 @@ export default class App extends React.Component {
     this.forceUpdate();
   };
 
-  handleStop = (r, c, newR, newC) => {
+  handleStop = async (r, c, newR, newC) => {
     const movingPiece = this.squares[r][c];
     const targetLocVal = this.squares[newR][newC];
+
+    // Testing api integration
+    const { data } = await api.getTestData();
+    console.log(data);
 
     if (getPieceColor(movingPiece) !== this.whoseTurn) {
       // Can't move other players pieces
