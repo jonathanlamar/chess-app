@@ -68,6 +68,7 @@ export default class App extends React.Component {
     }
   };
 
+  // TODO: May kill this once done moving game logic to backend.
   updateGameState = (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
