@@ -85,7 +85,7 @@ export function getPieceType(piece) {
 }
 
 export function initialiseChessBoard() {
-  return parseFenBoardRep("N7/np6/8/8/8/8/8/2P4k1"); // For testing
+  return parseFenBoardRep("N2qR3/bp6/8/8/8/8/8/2P4k1"); // For testing
   // return parseFenBoardRep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 }
 
