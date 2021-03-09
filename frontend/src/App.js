@@ -6,12 +6,12 @@ import GameInfo from "./components/gameinfo.js";
 import { Pieces, Player } from "./constants";
 import { initialiseChessBoard, getPieceColor, rcToFileRank } from "./utils";
 import ValidMoves from "./utils/validMoves";
+import * as api from "./api";
 
 export default class App extends React.Component {
   constructor() {
     super();
-    this.squares = initialiseChessBoard();
-    this.whoseTurn = Player.WHITE;
+    this.gameState = initialiseChessBoard();
     this.whiteCapturedPieces = [];
     this.blackCapturedPieces = [];
     // When a piece is lifted, this holds its original board position in
@@ -30,14 +30,14 @@ export default class App extends React.Component {
         piece,
         r,
         c,
-        this.squares
+        this.gameState.squares
       );
     } else {
       this.validMovesSquares = ValidMoves.allPossibleSlideMoves(
         piece,
         r,
         c,
-        this.squares
+        this.gameState.squares
       );
     }
 
@@ -45,10 +45,10 @@ export default class App extends React.Component {
   };
 
   handleStop = (r, c, newR, newC) => {
-    const movingPiece = this.squares[r][c];
-    const targetLocVal = this.squares[newR][newC];
+    const movingPiece = this.gameState.squares[r][c];
+    const targetLocVal = this.gameState.squares[newR][newC];
 
-    if (getPieceColor(movingPiece) !== this.whoseTurn) {
+    if (getPieceColor(movingPiece) !== this.gameState.whoseMove) {
       // Can't move other players pieces
       return this.updateGameState(r, c, r, c);
     }
@@ -78,8 +78,8 @@ export default class App extends React.Component {
       return { r, c };
     }
 
-    const movingPiece = this.squares[r][c];
-    const targetLocVal = this.squares[newR][newC];
+    const movingPiece = this.gameState.squares[r][c];
+    const targetLocVal = this.gameState.squares[newR][newC];
 
     if (
       getPieceColor(movingPiece) === Pieces.WHITE &&
@@ -90,11 +90,11 @@ export default class App extends React.Component {
       this.blackCapturedPieces.push(targetLocVal);
     }
 
-    this.squares[newR][newC] = movingPiece;
-    this.squares[r][c] = Pieces.NONE;
+    this.gameState.squares[newR][newC] = movingPiece;
+    this.gameState.squares[r][c] = Pieces.NONE;
 
-    this.whoseTurn =
-      this.whoseTurn === Player.WHITE ? Player.BLACK : Player.WHITE;
+    this.gameState.whoseMove =
+      this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
 
     this.forceUpdate();
     return { r: newR, c: newC };
@@ -104,15 +104,15 @@ export default class App extends React.Component {
     return (
       <div className="game">
         <Board
-          squares={this.squares}
+          squares={this.gameState.squares}
           handleStartFn={this.handleStart}
           handleStopFn={this.handleStop}
-          whoseTurn={this.whoseTurn}
+          whoseTurn={this.gameState.whoseMove}
           mobilePieceHomeSquare={this.mobilePieceHomeSquare}
           validMovesSquares={this.validMovesSquares}
         />
         <GameInfo
-          whoseTurn={this.whoseTurn}
+          whoseTurn={this.gameState.whoseMove}
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
         />
