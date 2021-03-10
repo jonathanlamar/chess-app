@@ -86,7 +86,7 @@ export function getPieceType(piece) {
 
 export function initialiseChessBoard() {
   // return parseFenString( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-  return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - 0 1"); // For testing
+  return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
 }
 
 export function parseFenString(fenString) {
@@ -129,7 +129,7 @@ export function parseFenString(fenString) {
   return {
     squares: parseFenBoardRep(boardRep),
     whoseMove: toMove === "w" ? Player.WHITE : Player.BLACK,
-    castleStatus: getCastleStatus(castleStatusStr),
+    castleStatus: parseFenCastleStatus(castleStatusStr),
     enPassantTargetPos:
       enPassantTarget === "-" ? null : fileRankToRc(enPassantTarget),
     halfMoveClockVal: parseInt(halfMoveClock),
@@ -166,59 +166,148 @@ function parseProcessedRowString(processedRowString) {
   const rowSquares = Array(8).fill(Pieces.NONE);
 
   for (let c = 0; c < 8; c++) {
-    switch (processedRowString[c]) {
-      case "p":
-        rowSquares[c] = Pieces.BLACK | Pieces.PAWN;
-        break;
-      case "r":
-        rowSquares[c] = Pieces.BLACK | Pieces.ROOK;
-        break;
-      case "n":
-        rowSquares[c] = Pieces.BLACK | Pieces.KNIGHT;
-        break;
-      case "b":
-        rowSquares[c] = Pieces.BLACK | Pieces.BISHOP;
-        break;
-      case "q":
-        rowSquares[c] = Pieces.BLACK | Pieces.QUEEN;
-        break;
-      case "k":
-        rowSquares[c] = Pieces.BLACK | Pieces.KING;
-        break;
-      case "P":
-        rowSquares[c] = Pieces.WHITE | Pieces.PAWN;
-        break;
-      case "R":
-        rowSquares[c] = Pieces.WHITE | Pieces.ROOK;
-        break;
-      case "N":
-        rowSquares[c] = Pieces.WHITE | Pieces.KNIGHT;
-        break;
-      case "B":
-        rowSquares[c] = Pieces.WHITE | Pieces.BISHOP;
-        break;
-      case "Q":
-        rowSquares[c] = Pieces.WHITE | Pieces.QUEEN;
-        break;
-      case "K":
-        rowSquares[c] = Pieces.WHITE | Pieces.KING;
-        break;
-      case "1":
-        rowSquares[c] = Pieces.NONE;
-        break;
-      default:
-        throw "Incorrect FEN VALUE";
-    }
+    rowSquares[c] = parseFenPiece(processedRowString[c]);
   }
 
   return rowSquares;
 }
 
-function getCastleStatus(castleStatusStr) {
+function parseFenPiece(fenPiece) {
+  switch (fenPiece) {
+    case "p":
+      return Pieces.BLACK | Pieces.PAWN;
+    case "r":
+      return Pieces.BLACK | Pieces.ROOK;
+    case "n":
+      return Pieces.BLACK | Pieces.KNIGHT;
+    case "b":
+      return Pieces.BLACK | Pieces.BISHOP;
+    case "q":
+      return Pieces.BLACK | Pieces.QUEEN;
+    case "k":
+      return Pieces.BLACK | Pieces.KING;
+    case "P":
+      return Pieces.WHITE | Pieces.PAWN;
+    case "R":
+      return Pieces.WHITE | Pieces.ROOK;
+    case "N":
+      return Pieces.WHITE | Pieces.KNIGHT;
+    case "B":
+      return Pieces.WHITE | Pieces.BISHOP;
+    case "Q":
+      return Pieces.WHITE | Pieces.QUEEN;
+    case "K":
+      return Pieces.WHITE | Pieces.KING;
+    case "1":
+      return Pieces.NONE;
+    default:
+      throw "Incorrect FEN VALUE";
+  }
+}
+
+function parseFenCastleStatus(castleStatusStr) {
   return {
-    whiteQueen: castleStatusStr.indexOf("Q") !== -1,
-    whiteKing: castleStatusStr.indexOf("K") !== -1,
     blackQueen: castleStatusStr.indexOf("q") !== -1,
     blackKing: castleStatusStr.indexOf("k") !== -1,
+    whiteQueen: castleStatusStr.indexOf("Q") !== -1,
+    whiteKing: castleStatusStr.indexOf("K") !== -1,
   };
+}
+
+export function toFenString(gameState) {
+  const fenBoard = toFenBoard(gameState.squares);
+  const whoseMove = toFenWhoseMove(gameState.whoseMove);
+  const castleStatus = toFenCastleStatus(gameState.castleStatus);
+  const enPassantTarget = toFenEnPassantTarget(gameState.enPassantTargetPos);
+  const halfMoveClock = gameState.halfMoveClockVal.toString();
+  const fullMoveCount = gameState.fullMoveCountVal.toString();
+
+  return [
+    fenBoard,
+    whoseMove,
+    castleStatus,
+    enPassantTarget,
+    halfMoveClock,
+    fullMoveCount,
+  ].join(" ");
+}
+
+function toFenBoard(squares) {
+  return squares.map(toProcessedFenRow).map(compressProcessedFenRow).join("/");
+}
+
+function toProcessedFenRow(row) {
+  return row.map(toFenPiece).join("");
+}
+
+function toFenPiece(piece) {
+  switch (piece) {
+    case Pieces.BLACK | Pieces.PAWN:
+      return "p";
+    case Pieces.BLACK | Pieces.ROOK:
+      return "r";
+    case Pieces.BLACK | Pieces.KNIGHT:
+      return "n";
+    case Pieces.BLACK | Pieces.BISHOP:
+      return "b";
+    case Pieces.BLACK | Pieces.QUEEN:
+      return "q";
+    case Pieces.BLACK | Pieces.KING:
+      return "k";
+    case Pieces.WHITE | Pieces.PAWN:
+      return "P";
+    case Pieces.WHITE | Pieces.ROOK:
+      return "R";
+    case Pieces.WHITE | Pieces.KNIGHT:
+      return "N";
+    case Pieces.WHITE | Pieces.BISHOP:
+      return "B";
+    case Pieces.WHITE | Pieces.QUEEN:
+      return "Q";
+    case Pieces.WHITE | Pieces.KING:
+      return "K";
+    case Pieces.NONE:
+      return "1";
+  }
+}
+
+function compressProcessedFenRow(processedFenRow) {
+  var newString = "";
+  var i = 0;
+  while (i < processedFenRow.length) {
+    if (processedFenRow[i] === "1") {
+      var j = i;
+      while (j < processedFenRow.length && processedFenRow[j] === "1") {
+        j++;
+      }
+      newString += (j - i).toString();
+      i = j;
+    } else {
+      newString += processedFenRow[i];
+      i++;
+    }
+  }
+
+  return newString;
+}
+
+function toFenWhoseMove(whoseMove) {
+  return whoseMove === Player.WHITE ? "w" : "b";
+}
+
+function toFenCastleStatus(castleStatus) {
+  var status = "";
+
+  if (castleStatus.whiteKing) status += "K";
+  if (castleStatus.whiteQueen) status += "Q";
+  if (castleStatus.blackKing) status += "k";
+  if (castleStatus.blackQueen) status += "q";
+  if (status === "") status = "-";
+
+  return status;
+}
+
+function toFenEnPassantTarget(enPassantTargetPos) {
+  if (enPassantTargetPos === null) return "-";
+  else return rcToFileRank(enPassantTargetPos.r, enPassantTargetPos.c);
 }
