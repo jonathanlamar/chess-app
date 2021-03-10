@@ -22,10 +22,15 @@ object DataTypes {
   final object Rook extends SlidePieceType
   final object Pawn extends JumpPieceType
 
-  sealed trait Square
+  sealed trait Square {
+    val color: Color
+    def isBlank: Boolean
+  }
 
   final object Blank extends Square {
     override def toString(): String = " "
+    def isBlank: Boolean = true
+    val color = null
   }
 
   final case class Piece(color: Color, pieceType: PieceType) extends Square {
@@ -44,6 +49,8 @@ object DataTypes {
         case White => letter
       }
     }
+
+    def isBlank: Boolean = false
   }
 
   object Piece {

@@ -48,7 +48,7 @@ object ValidMoves {
       )
       .map(pos + _)
       .filter(_.isInBounds)
-      .filter(p => board.squares(p.row)(p.col) != Blank || p == board.enPassantTarget)
+      .filter(p => !board.squares(p.row)(p.col).isBlank || p == board.enPassantTarget)
   }
 
   val jumpDeltas = Map(
@@ -122,36 +122,19 @@ object ValidMoves {
     )
   }
 
-  // TODO: This should be rewritten to be functional
-  // FIXME: Need to break out of the loop
   def getRay(board: Board, pos: Position, delta: Position, color: Color): List[Position] = {
-    var ray: List[Position] = Nil
+    val rayPieces = (1 until 8).toList
+      .map(pos + delta * _)
+      .filter(_.isInBounds)
+      .map(p => (p, board.squares(p.row)(p.col)))
 
-    // (1 until 8).toList
-    //   .map(pos + delta * _)
-    //   .filter(_.isInBounds)
-    //   .map(p => (p, board.squares(p.row)(p.col)))
-    //   .map({ case (p: Position, q: Square) => p }) // TODO>?>?
+    val blankRaySquares = rayPieces.takeWhile(_._2.isBlank).map(_._1)
+    val otherColorSquares =
+      rayPieces.dropWhile(_._2.isBlank).takeWhile(_._2.color != color).map(_._1)
 
-    var keepGoing = true
-    for (i <- 1 until 8) {
-      val toAddPos = pos + delta * i
-
-      if (toAddPos.isInBounds && keepGoing) {
-        val pieceAtPos = board.squares(toAddPos.row)(toAddPos.col)
-
-        pieceAtPos match {
-          case Blank => ray = toAddPos :: ray
-          case Piece(otherColor, _) => {
-            if (otherColor != color) ray = toAddPos :: ray
-            keepGoing = false
-          }
-        }
-      } else {
-        keepGoing = false
-      }
+    otherColorSquares match {
+      case Nil       => blankRaySquares
+      case head :: _ => blankRaySquares :+ head
     }
-
-    ray
   }
 }
