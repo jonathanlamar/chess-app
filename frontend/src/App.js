@@ -43,7 +43,6 @@ export default class App extends React.Component {
 
   handleStop = (r, c, newR, newC) => {
     const movingPiece = this.gameState.squares[r][c];
-    const targetLocVal = this.gameState.squares[newR][newC];
 
     if (getPieceColor(movingPiece) !== this.gameState.whoseMove) {
       // Can't move other players pieces
@@ -55,17 +54,9 @@ export default class App extends React.Component {
       return this.updateGameState(r, c, r, c);
     }
 
-    // Basic rules
-    if (targetLocVal === Pieces.NONE) {
-      return this.updateGameState(r, c, newR, newC);
-    } else if (getPieceColor(targetLocVal) !== getPieceColor(movingPiece)) {
-      return this.updateGameState(r, c, newR, newC);
-    } else {
-      return this.updateGameState(r, c, r, c); // No valid move
-    }
+    return this.updateGameState(r, c, newR, newC);
   };
 
-  // TODO: May kill this once done moving game logic to backend.
   updateGameState = (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
