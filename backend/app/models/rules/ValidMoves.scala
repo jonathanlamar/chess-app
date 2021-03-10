@@ -4,7 +4,7 @@ import models.utils.DataTypes._
 
 object ValidMoves {
 
-  // TODO: Castling
+  // TODO: Castling, Pawn promotion
   def allPossibleMoves(board: Board, pos: Position): List[Position] = {
     board.squares(pos.row)(pos.col) match {
       case Piece(color, pieceType) =>

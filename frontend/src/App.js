@@ -7,6 +7,7 @@ import { Pieces, Player } from "./constants";
 import {
   initialiseChessBoard,
   getPieceColor,
+  getPieceType,
   rcToFileRank,
   toFenString,
 } from "./utils";
@@ -61,6 +62,7 @@ export default class App extends React.Component {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
 
+    // No op if no move
     if (r === newR && c === newC) {
       this.forceUpdate();
       return { r, c };
@@ -69,6 +71,7 @@ export default class App extends React.Component {
     const movingPiece = this.gameState.squares[r][c];
     const targetLocVal = this.gameState.squares[newR][newC];
 
+    // Capturing
     if (
       getPieceColor(movingPiece) === Pieces.WHITE &&
       targetLocVal !== Pieces.NONE
@@ -76,6 +79,30 @@ export default class App extends React.Component {
       this.whiteCapturedPieces.push(targetLocVal);
     } else if (targetLocVal !== Pieces.NONE) {
       this.blackCapturedPieces.push(targetLocVal);
+    }
+
+    // En Passant capturing
+    if (
+      this.gameState.enPassantTargetPos &&
+      getPieceType(movingPiece) === Pieces.PAWN &&
+      newR === this.gameState.enPassantTargetPos.r &&
+      newC === this.gameState.enPassantTargetPos.c
+    ) {
+      if (getPieceColor(movingPiece) === Pieces.WHITE) {
+        this.whiteCapturedPieces.push(this.gameState.squares[newR + 1][newC]);
+        this.gameState.squares[newR + 1][newC] = Pieces.NONE;
+      } else {
+        this.blackCapturedPieces.push(this.gameState.squares[newR - 1][newC]);
+        this.gameState.squares[newR - 1][newC] = Pieces.NONE;
+      }
+    }
+
+    // TODO: pawn promotion, castling
+    // En Passant target computation
+    if (getPieceType(movingPiece) === Pieces.PAWN && Math.abs(r - newR) === 2) {
+      this.gameState.enPassantTargetPos = { r: (r + newR) / 2, c: c };
+    } else {
+      this.gameState.enPassantTargetPos = null;
     }
 
     this.gameState.squares[newR][newC] = movingPiece;
