@@ -58,6 +58,8 @@ export default class App extends React.Component {
     return this.updateGameState(r, c, newR, newC);
   };
 
+  // TODO: Put these updates behind an API?
+  // TODO: pawn promotion, castling
   updateGameState = (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
@@ -97,7 +99,6 @@ export default class App extends React.Component {
       }
     }
 
-    // TODO: pawn promotion, castling
     // En Passant target computation
     if (getPieceType(movingPiece) === Pieces.PAWN && Math.abs(r - newR) === 2) {
       this.gameState.enPassantTargetPos = { r: (r + newR) / 2, c: c };

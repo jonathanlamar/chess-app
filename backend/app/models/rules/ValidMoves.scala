@@ -21,6 +21,7 @@ object ValidMoves {
     }
   }
 
+  // FIXME: Pawns can't capture directly.  Decouple from jump piece logic.
   def allPossiblePawnMoves(board: Board, pos: Position, color: Color): List[Position] = {
     val deltas =
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
