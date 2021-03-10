@@ -122,23 +122,33 @@ object ValidMoves {
     )
   }
 
+  // TODO: This should be rewritten to be functional
+  // FIXME: Need to break out of the loop
   def getRay(board: Board, pos: Position, delta: Position, color: Color): List[Position] = {
-    var i = 0
-    var keepGoing = true
     var ray: List[Position] = Nil
-    while (keepGoing) {
+
+    // (1 until 8).toList
+    //   .map(pos + delta * _)
+    //   .filter(_.isInBounds)
+    //   .map(p => (p, board.squares(p.row)(p.col)))
+    //   .map({ case (p: Position, q: Square) => p }) // TODO>?>?
+
+    var keepGoing = true
+    for (i <- 1 until 8) {
       val toAddPos = pos + delta * i
 
-      if (toAddPos.isInBounds) {
+      if (toAddPos.isInBounds && keepGoing) {
         val pieceAtPos = board.squares(toAddPos.row)(toAddPos.col)
 
         pieceAtPos match {
           case Blank => ray = toAddPos :: ray
           case Piece(otherColor, _) => {
-            keepGoing = false
             if (otherColor != color) ray = toAddPos :: ray
+            keepGoing = false
           }
         }
+      } else {
+        keepGoing = false
       }
     }
 
