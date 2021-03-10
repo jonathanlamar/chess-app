@@ -21,15 +21,21 @@ object ValidMoves {
     }
   }
 
-  // FIXME: Pawns can't capture directly.  Decouple from jump piece logic.
   def allPossiblePawnMoves(board: Board, pos: Position, color: Color): List[Position] = {
     val deltas =
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
-    val moves =
-      pawnCaptureSquares(board, pos, color) ::: allPossibleJumpMoves(board, pos, deltas, color)
+    val normalMoves = deltas
+      .map(delta =>
+        color match {
+          case Black => pos + delta.verticalFlip
+          case White => pos + delta
+        }
+      )
+      .filter(_.isInBounds)
+      .filter(p => board.squares(p.row)(p.col).isBlank)
 
-    moves
+    getPawnCaptureSquares(board, pos, color) ::: normalMoves
   }
 
   def isInitialPawn(pos: Position, color: Color): Boolean = {
@@ -39,7 +45,7 @@ object ValidMoves {
     }
   }
 
-  def pawnCaptureSquares(board: Board, pos: Position, color: Color): List[Position] = {
+  def getPawnCaptureSquares(board: Board, pos: Position, color: Color): List[Position] = {
     List(Position(-1, -1), Position(-1, 1))
       .map(delta =>
         color match {
@@ -53,7 +59,6 @@ object ValidMoves {
   }
 
   val jumpDeltas = Map(
-    Pawn -> List(Position(-1, 0)),
     Knight -> List(
       Position(-2, -1),
       Position(-2, 1),
@@ -85,20 +90,14 @@ object ValidMoves {
     deltas
       .map(delta =>
         color match {
-          case Black => delta.verticalFlip
-          case White => delta
+          case Black => pos + delta.verticalFlip
+          case White => pos + delta
         }
       )
-      .map(pos + _)
       .filter(_.isInBounds)
-      .filter(p => {
-        val dest = board.squares(p.row)(p.col)
-
-        dest match {
-          case Blank                => true
-          case Piece(otherColor, _) => otherColor != color
-        }
-      })
+      .filter(p =>
+        board.squares(p.row)(p.col).isBlank || board.squares(p.row)(p.col).color != color
+      )
   }
 
   def allPossibleQueenMoves(board: Board, pos: Position, color: Color): List[Position] = {

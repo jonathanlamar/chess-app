@@ -20,7 +20,7 @@ object DataTypes {
   final object Bishop extends SlidePieceType
   final object Knight extends JumpPieceType
   final object Rook extends SlidePieceType
-  final object Pawn extends JumpPieceType
+  final object Pawn extends PieceType
 
   sealed trait Square {
     val color: Color
