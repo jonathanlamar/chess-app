@@ -29,8 +29,6 @@ export default class App extends React.Component {
   handleStart = async (r, c) => {
     const fenString = toFenString(this.gameState);
 
-    console.log(encodeURIComponent(fenString));
-    console.log(rcToFileRank(r, c));
     const { data: validMoves } = await api.getLegalMoves(
       fenString,
       rcToFileRank(r, c)

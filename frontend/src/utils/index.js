@@ -85,8 +85,10 @@ export function getPieceType(piece) {
 }
 
 export function initialiseChessBoard() {
-  // return parseFenString( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-  return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
+  return parseFenString(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  );
+  // return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
 }
 
 export function parseFenString(fenString) {
