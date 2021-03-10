@@ -12,13 +12,15 @@ object DataTypes {
   case class Player(color: Color)
 
   sealed trait PieceType
+  sealed trait JumpPieceType extends PieceType
+  sealed trait SlidePieceType extends PieceType
 
-  final object King extends PieceType
-  final object Queen extends PieceType
-  final object Bishop extends PieceType
-  final object Knight extends PieceType
-  final object Rook extends PieceType
-  final object Pawn extends PieceType
+  final object King extends JumpPieceType
+  final object Queen extends SlidePieceType
+  final object Bishop extends SlidePieceType
+  final object Knight extends JumpPieceType
+  final object Rook extends SlidePieceType
+  final object Pawn extends JumpPieceType
 
   sealed trait Square
 
@@ -59,7 +61,7 @@ object DataTypes {
         case 'B' => Piece(White, Bishop)
         case 'Q' => Piece(White, Queen)
         case 'K' => Piece(White, King)
-        case _   => throw new Exception("Invalid character to construct Piece")
+        case _   => throw new Exception(s"Invalid character to construct Piece: ${fenPiece}")
       }
     }
   }
@@ -68,6 +70,13 @@ object DataTypes {
     def toFileRank(): String = {
       "abcdefgh".substring(row, row + 1) + (8 - col).toString()
     }
+
+    // For computing valid squares
+    def +(other: Position): Position = Position(row + other.row, col + other.col)
+    def *(other: Int): Position = Position(row * other, col * other)
+    def ==(other: Position): Boolean = row == other.row && col == other.col
+    def isInBounds: Boolean = row >= 0 && row < 8 && col >= 0 && col < 8
+    def verticalFlip: Position = Position(-row, col)
   }
 
   object Position {

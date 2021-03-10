@@ -36,7 +36,8 @@ object Fen {
 
   def parseFenString(fenString: String): Board = {
     // TODO - Functional exception handling
-    if (!fenRegex.matches(fenString)) throw new Exception("Not a valid FEN string.")
+    // FIXME - this regex is broken
+    // if (!fenRegex.matches(fenString)) throw new Exception("Not a valid FEN string.")
 
     val fenParts = fenString.split(" ")
 
@@ -58,7 +59,7 @@ object Fen {
     val zeroCharValue = 48 // Is this universal?
 
     fenRow.foldLeft("")((x, y) => {
-      if (y.isDigit) x + "1" + (y - zeroCharValue)
+      if (y.isDigit) x + "1" * (y - zeroCharValue)
       else x + y.toString()
     })
   }

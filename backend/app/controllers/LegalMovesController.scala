@@ -1,5 +1,6 @@
 package controllers
 
+import java.net.URLDecoder
 import javax.inject._
 import models.rules.ValidMoves._
 import models.utils.DataTypes._
@@ -17,14 +18,14 @@ class LegalMovesController @Inject() (val controllerComponents: ControllerCompon
 
   // TODO: WTF is going on here.
   implicit val posWrites: Writes[Position] =
-    (JsPath \ "row").write[Int].and((JsPath \ "col").write[Int])(unlift(Position.unapply))
+    (JsPath \ "r").write[Int].and((JsPath \ "c").write[Int])(unlift(Position.unapply))
 
   // TODO: URL encoding/decoding for fen string
   def getAll(fenString: String, movingPieceFileRank: String): Action[AnyContent] = Action {
-    // val board = Board(fenString)
+    val board = Board(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
 
-    val json = Json.toJson(allPossibleMovesDumb(movingPiecePos))
+    val json = Json.toJson(allPossibleMoves(board, movingPiecePos))
     // TODO: Try logic for exception handling
     Ok(json)
   }

@@ -4,8 +4,12 @@ import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
 import { Pieces, Player } from "./constants";
-import { initialiseChessBoard, getPieceColor, rcToFileRank } from "./utils";
-import ValidMoves from "./utils/validMoves";
+import {
+  initialiseChessBoard,
+  getPieceColor,
+  rcToFileRank,
+  toFenString,
+} from "./utils";
 import * as api from "./api";
 
 export default class App extends React.Component {
@@ -22,25 +26,20 @@ export default class App extends React.Component {
     this.validMovesSquares = [];
   }
 
-  handleStart = (piece, r, c) => {
+  handleStart = async (r, c) => {
+    const fenString = toFenString(this.gameState);
+
+    console.log(encodeURIComponent(fenString));
+    console.log(rcToFileRank(r, c));
+    const { data: validMoves } = await api.getLegalMoves(
+      fenString,
+      rcToFileRank(r, c)
+    );
+
     this.mobilePieceHomeSquare = rcToFileRank(r, c);
-
-    if (ValidMoves.isJumpPiece(piece)) {
-      this.validMovesSquares = ValidMoves.allPosibleJumpMoves(
-        piece,
-        r,
-        c,
-        this.gameState.squares
-      );
-    } else {
-      this.validMovesSquares = ValidMoves.allPossibleSlideMoves(
-        piece,
-        r,
-        c,
-        this.gameState.squares
-      );
-    }
-
+    this.validMovesSquares = validMoves.map((pos) =>
+      rcToFileRank(pos.r, pos.c)
+    );
     this.forceUpdate();
   };
 

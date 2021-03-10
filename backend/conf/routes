@@ -6,6 +6,3 @@
 GET  /rules/legal/:fen/:pos  controllers.LegalMovesController.getAll(fen: String, pos: String)
 GET  /rules/attack/:fen      controllers.AttackController.getAll(fen: String)
 GET  /rules/check/:fen       controllers.CheckController.getAll(fen: String)
-
-# Just for testing integration with frontend
-GET  /rules/hello            controllers.TestController.index()
