@@ -59,7 +59,7 @@ export default class App extends React.Component {
   };
 
   // TODO: Put these updates behind an API?
-  // TODO: pawn promotion, castling
+  // TODO: pawn promotion
   updateGameState = (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
@@ -99,6 +99,21 @@ export default class App extends React.Component {
       }
     }
 
+    // Castling
+    if (
+      getPieceType(movingPiece) === Pieces.KING &&
+      newR === r &&
+      Math.abs(newC - c) === 2
+    ) {
+      const delta = Math.sign(newC - c);
+      const color = getPieceColor(movingPiece);
+      const row = color === Pieces.WHITE ? 7 : 0;
+      const rookCol = delta === 1 ? 7 : 0;
+
+      this.gameState.squares[row][rookCol] = Pieces.NONE;
+      this.gameState.squares[row][4 + delta] = color | Pieces.ROOK;
+    }
+
     // En Passant target computation
     if (getPieceType(movingPiece) === Pieces.PAWN && Math.abs(r - newR) === 2) {
       this.gameState.enPassantTargetPos = { r: (r + newR) / 2, c: c };
@@ -111,6 +126,52 @@ export default class App extends React.Component {
 
     this.gameState.whoseMove =
       this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
+
+    // Update castle status
+    // FIXME: This is ugly
+    if (movingPiece === (Pieces.WHITE | Pieces.KING)) {
+      this.gameState.castleStatus.whiteKing = false;
+      this.gameState.castleStatus.whiteQueen = false;
+    }
+    if (movingPiece === (Pieces.BLACK | Pieces.KING)) {
+      this.gameState.castleStatus.blackKing = false;
+      this.gameState.castleStatus.blackQueen = false;
+    }
+
+    if (getPieceType(movingPiece) === Pieces.ROOK) {
+      if (
+        getPieceColor(movingPiece) === Pieces.WHITE &&
+        this.gameState.castleStatus.whiteQueen &&
+        r === 7 &&
+        c === 0
+      ) {
+        this.gameState.castleStatus.whiteQueen = false;
+      }
+      if (
+        getPieceColor(movingPiece) === Pieces.WHITE &&
+        this.gameState.castleStatus.whiteKing &&
+        r === 7 &&
+        c === 7
+      ) {
+        this.gameState.castleStatus.whiteKing = false;
+      }
+      if (
+        getPieceColor(movingPiece) === Pieces.BLACK &&
+        this.gameState.castleStatus.blackQueen &&
+        r === 0 &&
+        c === 0
+      ) {
+        this.gameState.castleStatus.blackQueen = false;
+      }
+      if (
+        getPieceColor(movingPiece) === Pieces.BLACK &&
+        this.gameState.castleStatus.blackKing &&
+        r === 0 &&
+        c === 7
+      ) {
+        this.gameState.castleStatus.blackKing = false;
+      }
+    }
 
     this.forceUpdate();
     return { r: newR, c: newC };
