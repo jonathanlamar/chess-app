@@ -2,9 +2,13 @@ package models.rules
 
 import models.utils.DataTypes._
 
+/** Logic for generating all valid moves for a piece.
+  * This includes considerations of blocking pieces and capturing/capturable,
+  * but is only "pseudo-legal" in the sense that no consideration for check is
+  * made.
+  */
 object ValidMoves {
 
-  // TODO: Pawn promotion
   def allPossibleMoves(board: Board, pos: Position): List[Position] = {
     board.squares(pos.row)(pos.col) match {
       case Piece(color, pieceType) =>
@@ -62,9 +66,9 @@ object ValidMoves {
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
     val normalMovePieces = doBasicFilters(pos, color, deltas)
-        .map(p => (p, board.squares(p.row)(p.col)))
-        .takeWhile(_._2.isBlank)
-        .map(_._1)
+      .map(p => (p, board.squares(p.row)(p.col)))
+      .takeWhile(_._2.isBlank)
+      .map(_._1)
 
     getPawnCaptureSquares(board, pos, color) ::: normalMovePieces
   }

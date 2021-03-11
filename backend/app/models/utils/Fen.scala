@@ -2,7 +2,9 @@ package models.utils
 
 import models.utils.DataTypes._
 
-/** https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+/** Logic for decoding and encoding FEN strings, which are defined as:
+  *
+  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   *
   * Each rank is described, starting with rank 8 and ending with rank 1;
   * within each rank, the contents of each square are described from file "a"
@@ -30,6 +32,8 @@ import models.utils.DataTypes._
   * rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
   */
 object Fen {
+
+  // TODO: Write logic for encoding FEN strings.
 
   val fenRegex =
     """\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$""".r

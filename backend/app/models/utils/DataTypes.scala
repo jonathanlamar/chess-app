@@ -2,6 +2,7 @@ package models.utils
 
 import models.utils.Fen._
 
+/** Data model for chess pieces, positions, and boards. */
 object DataTypes {
 
   sealed trait Color

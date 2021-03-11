@@ -20,7 +20,6 @@ class LegalMovesController @Inject() (val controllerComponents: ControllerCompon
   implicit val posWrites: Writes[Position] =
     (JsPath \ "r").write[Int].and((JsPath \ "c").write[Int])(unlift(Position.unapply))
 
-  // TODO: URL encoding/decoding for fen string
   def getAll(fenString: String, movingPieceFileRank: String): Action[AnyContent] = Action {
     val board = Board(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
