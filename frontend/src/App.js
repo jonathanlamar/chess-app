@@ -93,12 +93,12 @@ export default class App extends React.Component {
       getPieceType(movingPiece) === Pieces.PAWN ||
       targetLocVal !== Pieces.NONE
     ) {
-      this.gameState.halfMoveClockVal = 0;
+      this.gameState.halfMoveClock = 0;
     } else {
-      this.gameState.halfMoveClockVal += 1;
+      this.gameState.halfMoveClock += 1;
     }
     if (getPieceColor(movingPiece) === Pieces.BLACK) {
-      this.gameState.fullMoveCountVal += 1;
+      this.gameState.fullMoveCount += 1;
     }
 
     // Normal Capturing
@@ -229,7 +229,7 @@ export default class App extends React.Component {
         <GameInfo
           whoseTurn={this.gameState.whoseMove}
           fullMoveCount={this.gameState.fullMoveCount}
-          halfMoveCount={this.gameState.halfMoveCount}
+          halfMoveClock={this.gameState.halfMoveClock}
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
           isAwaitingPawnPromotion={this.isAwaitingPawnPromotion}

@@ -15,8 +15,8 @@ export default class GameInfo extends React.Component {
           <div>
             <h3>
               {playerString + " to move.\t"}
-              {this.props.fullMoveCount + " full moves\t"}
-              {this.props.halfMoveCount + " half moves"}
+              {"Full move count: " + this.props.fullMoveCount + "\t"}
+              {"Half move clock: " + this.props.halfMoveClock + "\t"}
             </h3>
           </div>
           <div>
@@ -45,8 +45,8 @@ export default class GameInfo extends React.Component {
           <div>
             <h3>
               {playerString + " to move.\t"}
-              {this.props.fullMoveCount + " full moves\t"}
-              {this.props.halfMoveCount + " half moves"}
+              {"Full move count: " + this.props.fullMoveCount + "\t"}
+              {"Half move clock: " + this.props.halfMoveClock + "\t"}
             </h3>
           </div>
           <div>

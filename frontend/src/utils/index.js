@@ -85,9 +85,11 @@ export function getPieceType(piece) {
 }
 
 export function initialiseChessBoard() {
-  return parseFenString(
+  const gameState = parseFenString(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
+  console.log(gameState);
+  return gameState;
   // return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
 }
 
@@ -134,8 +136,8 @@ export function parseFenString(fenString) {
     castleStatus: parseFenCastleStatus(castleStatusStr),
     enPassantTargetPos:
       enPassantTarget === "-" ? null : fileRankToRc(enPassantTarget),
-    halfMoveClockVal: parseInt(halfMoveClock),
-    fullMoveCountVal: parseInt(fullMoveCount),
+    halfMoveClock: parseInt(halfMoveClock),
+    fullMoveCount: parseInt(fullMoveCount),
   };
 }
 
@@ -221,8 +223,8 @@ export function toFenString(gameState) {
   const whoseMove = toFenWhoseMove(gameState.whoseMove);
   const castleStatus = toFenCastleStatus(gameState.castleStatus);
   const enPassantTarget = toFenEnPassantTarget(gameState.enPassantTargetPos);
-  const halfMoveClock = gameState.halfMoveClockVal.toString();
-  const fullMoveCount = gameState.fullMoveCountVal.toString();
+  const halfMoveClock = gameState.halfMoveClock.toString();
+  const fullMoveCount = gameState.fullMoveCount.toString();
 
   return [
     fenBoard,
