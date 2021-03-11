@@ -25,6 +25,10 @@ export default class App extends React.Component {
     // When a piece is lifted, this holds all possible destination squares for
     // the piece in rank-file notation.
     this.validMovesSquares = [];
+
+    // For handling pawn promotion
+    this.isAwaitingPawnPromotion = false;
+    this.pawnPromotionLocation = null;
   }
 
   handleStart = async (r, c) => {
@@ -58,8 +62,19 @@ export default class App extends React.Component {
     return this.updateGameState(r, c, newR, newC);
   };
 
+  promotePawn = (newPiece) => {
+    console.log("Promoting pawn: ", newPiece);
+    // This will throw an error if pawnPromotionLocation is not set.
+    this.gameState.squares[this.pawnPromotionLocation.r][
+      this.pawnPromotionLocation.c
+    ] = newPiece;
+    this.isAwaitingPawnPromotion = false;
+    this.pawnPromotionLocation = null;
+
+    this.forceUpdate();
+  };
+
   // TODO: Put these updates behind an API?
-  // TODO: pawn promotion
   updateGameState = (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
@@ -112,6 +127,16 @@ export default class App extends React.Component {
 
       this.gameState.squares[row][rookCol] = Pieces.NONE;
       this.gameState.squares[row][4 + delta] = color | Pieces.ROOK;
+    }
+
+    // Pawn promotion
+    if ((movingPiece === Pieces.WHITE) | Pieces.PAWN && newR === 0) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
+    }
+    if ((movingPiece === Pieces.BLACK) | Pieces.PAWN && newR === 7) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
     }
 
     // En Passant target computation
@@ -192,6 +217,17 @@ export default class App extends React.Component {
           whoseTurn={this.gameState.whoseMove}
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
+          isAwaitingPawnPromotion={this.isAwaitingPawnPromotion}
+          pawnPromotionColor={
+            this.isAwaitingPawnPromotion
+              ? getPieceColor(
+                  this.gameState.squares[this.pawnPromotionLocation.r][
+                    this.pawnPromotionLocation.c
+                  ]
+                )
+              : null
+          }
+          promotePawnFn={this.promotePawn}
         />
       </div>
     );
