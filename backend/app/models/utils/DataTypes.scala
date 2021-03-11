@@ -12,14 +12,12 @@ object DataTypes {
   case class Player(color: Color)
 
   sealed trait PieceType
-  sealed trait JumpPieceType extends PieceType
-  sealed trait SlidePieceType extends PieceType
 
-  final object King extends JumpPieceType
-  final object Queen extends SlidePieceType
-  final object Bishop extends SlidePieceType
-  final object Knight extends JumpPieceType
-  final object Rook extends SlidePieceType
+  final object King extends PieceType
+  final object Queen extends PieceType
+  final object Bishop extends PieceType
+  final object Knight extends PieceType
+  final object Rook extends PieceType
   final object Pawn extends PieceType
 
   sealed trait Square {

@@ -73,7 +73,7 @@ export default class App extends React.Component {
     const movingPiece = this.gameState.squares[r][c];
     const targetLocVal = this.gameState.squares[newR][newC];
 
-    // Capturing
+    // Normal Capturing
     if (
       getPieceColor(movingPiece) === Pieces.WHITE &&
       targetLocVal !== Pieces.NONE

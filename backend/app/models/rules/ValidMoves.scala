@@ -4,36 +4,65 @@ import models.utils.DataTypes._
 
 object ValidMoves {
 
-  // TODO: Castling, Pawn promotion
+  // TODO: Pawn promotion
   def allPossibleMoves(board: Board, pos: Position): List[Position] = {
     board.squares(pos.row)(pos.col) match {
       case Piece(color, pieceType) =>
         if (color != board.whoseMove) throw new Exception("Wrong color to move")
         else
           pieceType match {
-            case Bishop           => allPossibleBishopMoves(board, pos, color)
-            case Rook             => allPossibleRookMoves(board, pos, color)
-            case Queen            => allPossibleQueenMoves(board, pos, color)
-            case Pawn             => allPossiblePawnMoves(board, pos, color)
-            case p: JumpPieceType => allPossibleJumpMoves(board, pos, jumpDeltas(p), color)
+            case Bishop => allPossibleBishopMoves(board, pos, color)
+            case Rook   => allPossibleRookMoves(board, pos, color)
+            case Queen  => allPossibleQueenMoves(board, pos, color)
+            case Pawn   => allPossiblePawnMoves(board, pos, color)
+            case Knight => allPossibleKnightMoves(board, pos, color)
+            case King   => allPossibleKingMoves(board, pos, color)
           }
       case Blank => throw new Exception("No piece at position")
     }
+  }
+
+  def allPossibleKingMoves(board: Board, pos: Position, color: Color): List[Position] = {
+    val deltas = List(
+      Position(-1, -1),
+      Position(-1, 0),
+      Position(-1, 1),
+      Position(0, -1),
+      Position(0, 1),
+      Position(1, -1),
+      Position(1, 0),
+      Position(1, 1)
+    ) ::: getCastlePositions(board, color)
+
+    doBasicFilters(pos, color, deltas)
+      .filter(p =>
+        board.squares(p.row)(p.col).isBlank || board.squares(p.row)(p.col).color != color
+      )
+  }
+
+  def getCastlePositions(board: Board, color: Color): List[Position] = {
+    val canCastle = color match {
+      case Black =>
+        List(
+          board.castleStatus.blackKing && board.squares(0).slice(5, 7).forall(_.isBlank),
+          board.castleStatus.blackQueen && board.squares(0).slice(1, 4).forall(_.isBlank)
+        )
+      case White =>
+        List(
+          board.castleStatus.whiteKing && board.squares(7).slice(5, 7).forall(_.isBlank),
+          board.castleStatus.whiteQueen && board.squares(7).slice(1, 4).forall(_.isBlank)
+        )
+    }
+
+    List(Position(0, 2), Position(0, -2)).zip(canCastle).filter(_._2).map(_._1)
   }
 
   def allPossiblePawnMoves(board: Board, pos: Position, color: Color): List[Position] = {
     val deltas =
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
-    val normalMoves = deltas
-      .map(delta =>
-        color match {
-          case Black => pos + delta.verticalFlip
-          case White => pos + delta
-        }
-      )
-      .filter(_.isInBounds)
-      .filter(p => board.squares(p.row)(p.col).isBlank)
+    val normalMoves =
+      doBasicFilters(pos, color, deltas).filter(p => board.squares(p.row)(p.col).isBlank)
 
     getPawnCaptureSquares(board, pos, color) ::: normalMoves
   }
@@ -45,21 +74,21 @@ object ValidMoves {
     }
   }
 
+  // TODO: This may be a bug
   def getPawnCaptureSquares(board: Board, pos: Position, color: Color): List[Position] = {
-    List(Position(-1, -1), Position(-1, 1))
-      .map(delta =>
-        color match {
-          case Black => delta.verticalFlip
-          case White => delta
-        }
+    doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
+      .filter(p =>
+        (!board.squares(p.row)(p.col).isBlank &&
+          board.squares(p.row)(p.col).color != color) || p == board.enPassantTarget
       )
-      .map(pos + _)
-      .filter(_.isInBounds)
-      .filter(p => !board.squares(p.row)(p.col).isBlank || p == board.enPassantTarget)
   }
 
-  val jumpDeltas = Map(
-    Knight -> List(
+  def allPossibleKnightMoves(
+      board: Board,
+      pos: Position,
+      color: Color
+  ): List[Position] = {
+    val deltas = List(
       Position(-2, -1),
       Position(-2, 1),
       Position(-1, -2),
@@ -68,25 +97,15 @@ object ValidMoves {
       Position(1, 2),
       Position(2, -1),
       Position(2, 1)
-    ),
-    King -> List(
-      Position(-1, -1),
-      Position(-1, 0),
-      Position(-1, 1),
-      Position(0, -1),
-      Position(0, 1),
-      Position(1, -1),
-      Position(1, 0),
-      Position(1, 1)
     )
-  )
 
-  def allPossibleJumpMoves(
-      board: Board,
-      pos: Position,
-      deltas: List[Position],
-      color: Color
-  ): List[Position] = {
+    doBasicFilters(pos, color, deltas)
+      .filter(p =>
+        board.squares(p.row)(p.col).isBlank || board.squares(p.row)(p.col).color != color
+      )
+  }
+
+  def doBasicFilters(pos: Position, color: Color, deltas: List[Position]): List[Position] = {
     deltas
       .map(delta =>
         color match {
@@ -95,9 +114,6 @@ object ValidMoves {
         }
       )
       .filter(_.isInBounds)
-      .filter(p =>
-        board.squares(p.row)(p.col).isBlank || board.squares(p.row)(p.col).color != color
-      )
   }
 
   def allPossibleQueenMoves(board: Board, pos: Position, color: Color): List[Position] = {
