@@ -88,6 +88,19 @@ export default class App extends React.Component {
     const movingPiece = this.gameState.squares[r][c];
     const targetLocVal = this.gameState.squares[newR][newC];
 
+    // Update move counts
+    if (
+      getPieceType(movingPiece) === Pieces.PAWN ||
+      targetLocVal !== Pieces.NONE
+    ) {
+      this.gameState.halfMoveClockVal = 0;
+    } else {
+      this.gameState.halfMoveClockVal += 1;
+    }
+    if (getPieceColor(movingPiece) === Pieces.BLACK) {
+      this.gameState.fullMoveCountVal += 1;
+    }
+
     // Normal Capturing
     if (
       getPieceColor(movingPiece) === Pieces.WHITE &&
@@ -215,6 +228,8 @@ export default class App extends React.Component {
         />
         <GameInfo
           whoseTurn={this.gameState.whoseMove}
+          fullMoveCount={this.gameState.fullMoveCount}
+          halfMoveCount={this.gameState.halfMoveCount}
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
           isAwaitingPawnPromotion={this.isAwaitingPawnPromotion}

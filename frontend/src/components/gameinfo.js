@@ -13,7 +13,11 @@ export default class GameInfo extends React.Component {
       return (
         <div>
           <div>
-            <h3>{playerString + " to move."}</h3>
+            <h3>
+              {playerString + " to move.\t"}
+              {this.props.fullMoveCount + " full moves\t"}
+              {this.props.halfMoveCount + " half moves"}
+            </h3>
           </div>
           <div>
             <CapturedPieces
@@ -39,7 +43,11 @@ export default class GameInfo extends React.Component {
       return (
         <div>
           <div>
-            <h3>{playerString + " to move."}</h3>
+            <h3>
+              {playerString + " to move.\t"}
+              {this.props.fullMoveCount + " full moves\t"}
+              {this.props.halfMoveCount + " half moves"}
+            </h3>
           </div>
           <div>
             <CapturedPieces
