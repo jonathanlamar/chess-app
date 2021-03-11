@@ -61,10 +61,12 @@ object ValidMoves {
     val deltas =
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
-    val normalMoves =
-      doBasicFilters(pos, color, deltas).filter(p => board.squares(p.row)(p.col).isBlank)
+    val normalMovePieces = doBasicFilters(pos, color, deltas)
+        .map(p => (p, board.squares(p.row)(p.col)))
+        .takeWhile(_._2.isBlank)
+        .map(_._1)
 
-    getPawnCaptureSquares(board, pos, color) ::: normalMoves
+    getPawnCaptureSquares(board, pos, color) ::: normalMovePieces
   }
 
   def isInitialPawn(pos: Position, color: Color): Boolean = {

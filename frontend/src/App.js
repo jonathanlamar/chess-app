@@ -130,11 +130,11 @@ export default class App extends React.Component {
     }
 
     // Pawn promotion
-    if ((movingPiece === Pieces.WHITE) | Pieces.PAWN && newR === 0) {
+    if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
       this.isAwaitingPawnPromotion = true;
       this.pawnPromotionLocation = { r: newR, c: newC };
     }
-    if ((movingPiece === Pieces.BLACK) | Pieces.PAWN && newR === 7) {
+    if (movingPiece === (Pieces.BLACK | Pieces.PAWN) && newR === 7) {
       this.isAwaitingPawnPromotion = true;
       this.pawnPromotionLocation = { r: newR, c: newC };
     }
