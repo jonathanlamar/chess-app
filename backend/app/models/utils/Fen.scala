@@ -38,6 +38,8 @@ object Fen {
   val fenRegex =
     """\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$""".r
 
+  val zeroCharValue = 48 // Is this universal?
+
   def parseFenString(fenString: String): Board = {
     // TODO - Functional exception handling
     // FIXME - this regex is broken
@@ -60,8 +62,6 @@ object Fen {
   }
 
   def processFenRow(fenRow: String): String = {
-    val zeroCharValue = 48 // Is this universal?
-
     fenRow.foldLeft("")((x, y) => {
       if (y.isDigit) x + "1" * (y - zeroCharValue)
       else x + y.toString()
@@ -78,4 +78,82 @@ object Fen {
     castleFenPart.indexOf("K") != -1,
     castleFenPart.indexOf("Q") != -1
   )
+
+  def toFenString(board: Board): String = {
+    val fenBoard = toFenBoard(board.squares)
+    val whoseMove = board.whoseMove match {
+      case Black => "b"
+      case White => "w"
+    }
+    val castleStatus = toFenCastleStatus(board.castleStatus)
+    val enPassantTarget = board.enPassantTarget.toFileRank()
+    val halfMoveClock = board.halfMoveClock.toString()
+    val fullMoveCount = board.fullMoveCount.toString()
+
+    return List(
+      fenBoard,
+      whoseMove,
+      castleStatus,
+      enPassantTarget,
+      halfMoveClock,
+      fullMoveCount
+    ).reduce(_ + " " + _)
+  }
+
+  def toFenBoard(squares: List[List[Square]]): String = {
+    squares.map(toProcessedFenRow).map(compressProcessedFenRow).reduce(_ + "/" + _)
+  }
+
+  def toProcessedFenRow(row: List[Square]): String = {
+    row.map(toFenPiece).mkString
+  }
+
+  def toFenPiece(square: Square): Char = {
+    square match {
+      case Blank => '1'
+      case Piece(color, pieceType) => {
+        val c = pieceType match {
+          case Pawn   => 'P'
+          case Knight => 'N'
+          case Bishop => 'B'
+          case Rook   => 'R'
+          case Queen  => 'Q'
+          case King   => 'K'
+        }
+
+        color match {
+          case Black => c.toLower
+          case White => c
+        }
+      }
+    }
+  }
+
+  def compressProcessedFenRow(processedFenRow: String): String = {
+    if (!processedFenRow.contains("11")) processedFenRow
+    else {
+      val charList = processedFenRow.toList
+      val numOnes = charList.dropWhile(_ != '1').takeWhile(_ == '1').length
+      val numOnesChar = (numOnes + zeroCharValue).toChar
+      val processedString =
+        (charList.takeWhile(_ != '1') ::: (
+          numOnesChar :: charList.dropWhile(_ != '1').dropWhile(_ == '1')
+        )).mkString
+
+      compressProcessedFenRow(processedString)
+    }
+  }
+
+  def toFenCastleStatus(castleStatus: CastleStatus): String = {
+    List(
+      castleStatus.whiteKing,
+      castleStatus.whiteQueen,
+      castleStatus.blackKing,
+      castleStatus.blackQueen
+    )
+      .zip(List("K", "Q", "k", "q"))
+      .filter(_._1)
+      .map(_._2)
+      .reduce(_ + _)
+  }
 }
