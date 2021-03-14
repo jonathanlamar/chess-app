@@ -10,6 +10,7 @@ import {
   getPieceType,
   rcToFileRank,
   toFenString,
+  parseFenString,
 } from "./utils";
 import * as api from "./api";
 
@@ -74,133 +75,39 @@ export default class App extends React.Component {
     this.forceUpdate();
   };
 
-  // TODO: Put these updates behind an API?
-  updateGameState = (r, c, newR, newC) => {
+  updateGameState = async (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
 
-    // No op if no move
-    if (r === newR && c === newC) {
-      this.forceUpdate();
-      return { r, c };
-    }
+    const movingPieceFileRank = rcToFileRank(r, c);
+    const destinationFileRank = rcToFileRank(newR, newC);
+    const fenString = toFenString(this.gameState);
+    console.log(
+      "Calling api on ",
+      fenString,
+      movingPieceFileRank,
+      destinationFileRank
+    );
+    const { data: updatedGameState } = await api.getUpdatedBoard(
+      fenString,
+      movingPieceFileRank,
+      destinationFileRank
+    );
+    console.log("API response: ", updatedGameState);
 
-    const movingPiece = this.gameState.squares[r][c];
-    const targetLocVal = this.gameState.squares[newR][newC];
-
-    // Update move counts
-    if (
-      getPieceType(movingPiece) === Pieces.PAWN ||
-      targetLocVal !== Pieces.NONE
-    ) {
-      this.gameState.halfMoveClock = 0;
-    } else {
-      this.gameState.halfMoveClock += 1;
-    }
-    if (getPieceColor(movingPiece) === Pieces.BLACK) {
-      this.gameState.fullMoveCount += 1;
-    }
-
-    // Capturing
-    if (
-      this.gameState.enPassantTargetPos &&
-      getPieceType(movingPiece) === Pieces.PAWN &&
-      newR === this.gameState.enPassantTargetPos.r &&
-      newC === this.gameState.enPassantTargetPos.c
-    ) {
-      // En Passant
-      if (getPieceColor(movingPiece) === Pieces.WHITE) {
-        this.whiteCapturedPieces.push(this.gameState.squares[newR + 1][newC]);
-        this.gameState.squares[newR + 1][newC] = Pieces.NONE;
-      } else {
-        this.blackCapturedPieces.push(this.gameState.squares[newR - 1][newC]);
-        this.gameState.squares[newR - 1][newC] = Pieces.NONE;
-      }
-    } else if (
-      targetLocVal !== Pieces.NONE &&
-      getPieceColor(movingPiece) === Pieces.WHITE
-    ) {
-      this.whiteCapturedPieces.push(targetLocVal);
-    } else if (targetLocVal !== Pieces.NONE) {
-      this.blackCapturedPieces.push(targetLocVal);
-    }
-
-    // Castling
-    if (
-      getPieceType(movingPiece) === Pieces.KING &&
-      newR === r &&
-      Math.abs(newC - c) === 2
-    ) {
-      const delta = Math.sign(newC - c);
-      const color = getPieceColor(movingPiece);
-      const row = color === Pieces.WHITE ? 7 : 0;
-      const rookCol = delta === 1 ? 7 : 0;
-
-      this.gameState.squares[row][rookCol] = Pieces.NONE;
-      this.gameState.squares[row][4 + delta] = color | Pieces.ROOK;
-    }
-
-    // En Passant target computation
-    if (getPieceType(movingPiece) === Pieces.PAWN && Math.abs(r - newR) === 2) {
-      this.gameState.enPassantTargetPos = { r: (r + newR) / 2, c: c };
-    } else {
-      this.gameState.enPassantTargetPos = null;
-    }
-
-    // Update castle status
-    // FIXME: This is ugly
-    if (movingPiece === (Pieces.WHITE | Pieces.KING)) {
-      this.gameState.castleStatus.whiteKing = false;
-      this.gameState.castleStatus.whiteQueen = false;
-    }
-    if (movingPiece === (Pieces.BLACK | Pieces.KING)) {
-      this.gameState.castleStatus.blackKing = false;
-      this.gameState.castleStatus.blackQueen = false;
-    }
-
-    if (getPieceType(movingPiece) === Pieces.ROOK) {
-      if (
-        getPieceColor(movingPiece) === Pieces.WHITE &&
-        this.gameState.castleStatus.whiteQueen &&
-        r === 7 &&
-        c === 0
-      ) {
-        this.gameState.castleStatus.whiteQueen = false;
-      }
-      if (
-        getPieceColor(movingPiece) === Pieces.WHITE &&
-        this.gameState.castleStatus.whiteKing &&
-        r === 7 &&
-        c === 7
-      ) {
-        this.gameState.castleStatus.whiteKing = false;
-      }
-      if (
-        getPieceColor(movingPiece) === Pieces.BLACK &&
-        this.gameState.castleStatus.blackQueen &&
-        r === 0 &&
-        c === 0
-      ) {
-        this.gameState.castleStatus.blackQueen = false;
-      }
-      if (
-        getPieceColor(movingPiece) === Pieces.BLACK &&
-        this.gameState.castleStatus.blackKing &&
-        r === 0 &&
-        c === 7
-      ) {
-        this.gameState.castleStatus.blackKing = false;
-      }
-    }
-
-    // Update position
-    this.gameState.squares[newR][newC] = movingPiece;
-    this.gameState.squares[r][c] = Pieces.NONE;
+    this.gameState = parseFenString(updatedGameState.fen);
+    this.blackCapturedPieces = this.blackCapturedPieces.concat(
+      updatedGameState.black
+    );
+    this.whiteCapturedPieces = this.whiteCapturedPieces.concat(
+      updatedGameState.white
+    );
 
     this.gameState.whoseMove =
       this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
 
     // Pawn promotion
+    const movingPiece = this.gameState.squares[r][c];
     if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
       this.isAwaitingPawnPromotion = true;
       this.pawnPromotionLocation = { r: newR, c: newC };
