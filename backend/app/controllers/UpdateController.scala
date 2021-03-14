@@ -18,8 +18,28 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
     extends BaseController {
 
   // TODO: WTF is going on here.
-  implicit val posWrites: Writes[Position] =
-    (JsPath \ "r").write[Int].and((JsPath \ "c").write[Int])(unlift(Position.unapply))
+  implicit val colorWrites: Writes[Color] = JsPath.write[String].contramap(_.toString)
+  implicit val typeWrites: Writes[PieceType] = JsPath.write[String].contramap(_.toString)
+  implicit val pieceWrites: Writes[Piece] =
+    (JsPath \ "color").write[Color].and((JsPath \ "type").write[PieceType])(unlift(Piece.unapply))
+  implicit val boardWrites: Writes[GameState] =
+    (JsPath \ "fen")
+      .write[String]
+      .and((JsPath \ "white").write[List[Piece]])
+      .and((JsPath \ "black").write[List[Piece]])(unlift(GameState.unapply))
+
+  // I don't understand this syntax very well, but this is the only way I know
+  // to coax the desired format.
+  case class GameState(
+      fenString: String,
+      whiteCapturedPieces: List[Piece],
+      blackCapturedPieces: List[Piece]
+  )
+
+  object GameState {
+    def apply(board: Board): GameState =
+      GameState(toFenString(board), board.whiteCapturedPieces, board.blackCapturedPieces)
+  }
 
   def getAll(
       fenString: String,
@@ -29,9 +49,12 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
     val board = Board(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
     val destinationPos = Position(destinationFileRank)
+
     val updatedBoard: Board = updateGameState(board, movingPiecePos, destinationPos)
 
     // TODO: Try logic for exception handling
-    Ok(toFenString(updatedBoard))
+    val json = Json.toJson(GameState(updatedBoard))
+
+    Ok(json)
   }
 }
