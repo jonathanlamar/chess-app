@@ -133,13 +133,13 @@ object Fen {
   def compressProcessedFenRow(processedFenRow: String): String = {
     if (!processedFenRow.contains("11")) processedFenRow
     else {
-      val charList = processedFenRow.toList
-      val numOnes = charList.dropWhile(_ != '1').takeWhile(_ == '1').length
-      val numOnesChar = (numOnes + zeroCharValue).toChar
-      val processedString =
-        (charList.takeWhile(_ != '1') ::: (
-          numOnesChar :: charList.dropWhile(_ != '1').dropWhile(_ == '1')
-        )).mkString
+      val firstDoubleOneIdx = processedFenRow.indexOf("11")
+      val prefix = processedFenRow.take(firstDoubleOneIdx)
+      val onesBlock = processedFenRow.drop(firstDoubleOneIdx).takeWhile(_ == '1')
+      val numOnes = onesBlock.length
+      val numOnesChar = numOnes.toString()
+      val suffix = processedFenRow.drop(firstDoubleOneIdx + numOnes)
+      val processedString = prefix + numOnesChar + suffix
 
       compressProcessedFenRow(processedString)
     }
