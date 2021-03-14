@@ -74,7 +74,7 @@ object DataTypes {
 
   case class Position(row: Int, col: Int) {
     def toFileRank(): String = {
-      "abcdefgh".substring(row, row + 1) + (8 - col).toString()
+      "abcdefgh".substring(col, col + 1) + (8 - row).toString()
     }
 
     // For computing valid squares
@@ -86,8 +86,8 @@ object DataTypes {
 
   object Position {
     def apply(fileRank: String): Position = {
-      val r = "abcdefgh".indexOf(fileRank.substring(0, 1))
-      val c = 8 - fileRank.substring(1).toInt
+      val r = 8 - fileRank.substring(1).toInt
+      val c = "abcdefgh".indexOf(fileRank.substring(0, 1))
 
       Position(r, c)
     }

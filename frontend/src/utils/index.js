@@ -14,13 +14,13 @@ export function linearIndexToRc(i) {
 
 export function fileRankToRc(fileRank) {
   return {
-    r: "abcdefgh".indexOf(fileRank[0]),
-    c: 8 - parseInt(fileRank[1]),
+    r: 8 - parseInt(fileRank[1]),
+    c: "abcdefgh".indexOf(fileRank[0]),
   };
 }
 
 export function rcToFileRank(r, c) {
-  return "abcdefgh"[r] + (8 - c).toString();
+  return "abcdefgh"[c] + (8 - r).toString();
 }
 
 export function rcToXy(r, c) {
