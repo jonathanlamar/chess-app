@@ -86,7 +86,8 @@ object Fen {
       case White => "w"
     }
     val castleStatus = toFenCastleStatus(board.castleStatus)
-    val enPassantTarget = board.enPassantTarget.toFileRank()
+    val enPassantTarget =
+      if (board.enPassantTarget != null) board.enPassantTarget.toFileRank() else "-"
     val halfMoveClock = board.halfMoveClock.toString()
     val fullMoveCount = board.fullMoveCount.toString()
 
