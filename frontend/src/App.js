@@ -101,23 +101,14 @@ export default class App extends React.Component {
       this.gameState.fullMoveCount += 1;
     }
 
-    // Normal Capturing
-    if (
-      getPieceColor(movingPiece) === Pieces.WHITE &&
-      targetLocVal !== Pieces.NONE
-    ) {
-      this.whiteCapturedPieces.push(targetLocVal);
-    } else if (targetLocVal !== Pieces.NONE) {
-      this.blackCapturedPieces.push(targetLocVal);
-    }
-
-    // En Passant capturing
+    // Capturing
     if (
       this.gameState.enPassantTargetPos &&
       getPieceType(movingPiece) === Pieces.PAWN &&
       newR === this.gameState.enPassantTargetPos.r &&
       newC === this.gameState.enPassantTargetPos.c
     ) {
+      // En Passant
       if (getPieceColor(movingPiece) === Pieces.WHITE) {
         this.whiteCapturedPieces.push(this.gameState.squares[newR + 1][newC]);
         this.gameState.squares[newR + 1][newC] = Pieces.NONE;
@@ -125,6 +116,13 @@ export default class App extends React.Component {
         this.blackCapturedPieces.push(this.gameState.squares[newR - 1][newC]);
         this.gameState.squares[newR - 1][newC] = Pieces.NONE;
       }
+    } else if (
+      targetLocVal !== Pieces.NONE &&
+      getPieceColor(movingPiece) === Pieces.WHITE
+    ) {
+      this.whiteCapturedPieces.push(targetLocVal);
+    } else if (targetLocVal !== Pieces.NONE) {
+      this.blackCapturedPieces.push(targetLocVal);
     }
 
     // Castling
@@ -142,28 +140,12 @@ export default class App extends React.Component {
       this.gameState.squares[row][4 + delta] = color | Pieces.ROOK;
     }
 
-    // Pawn promotion
-    if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
-      this.isAwaitingPawnPromotion = true;
-      this.pawnPromotionLocation = { r: newR, c: newC };
-    }
-    if (movingPiece === (Pieces.BLACK | Pieces.PAWN) && newR === 7) {
-      this.isAwaitingPawnPromotion = true;
-      this.pawnPromotionLocation = { r: newR, c: newC };
-    }
-
     // En Passant target computation
     if (getPieceType(movingPiece) === Pieces.PAWN && Math.abs(r - newR) === 2) {
       this.gameState.enPassantTargetPos = { r: (r + newR) / 2, c: c };
     } else {
       this.gameState.enPassantTargetPos = null;
     }
-
-    this.gameState.squares[newR][newC] = movingPiece;
-    this.gameState.squares[r][c] = Pieces.NONE;
-
-    this.gameState.whoseMove =
-      this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
 
     // Update castle status
     // FIXME: This is ugly
@@ -209,6 +191,23 @@ export default class App extends React.Component {
       ) {
         this.gameState.castleStatus.blackKing = false;
       }
+    }
+
+    // Update position
+    this.gameState.squares[newR][newC] = movingPiece;
+    this.gameState.squares[r][c] = Pieces.NONE;
+
+    this.gameState.whoseMove =
+      this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
+
+    // Pawn promotion
+    if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
+    }
+    if (movingPiece === (Pieces.BLACK | Pieces.PAWN) && newR === 7) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
     }
 
     this.forceUpdate();
