@@ -114,11 +114,145 @@ object DataTypes {
       castleStatus: CastleStatus,
       enPassantTarget: Position,
       halfMoveClock: Int,
-      fullMoveCount: Int
+      fullMoveCount: Int,
+      whiteCapturedPieces: List[Piece] = Nil,
+      blackCapturedPieces: List[Piece] = Nil
   ) {
     override def toString(): String = {
       squares.map(_.mkString + "\n").mkString
     }
+
+    def transform(f: Board => Board): Board = f(this)
+
+    // TODO: These are ugly.  Should really use builder pattern here.
+    def updateSquare(pos: Position, square: Square): Board = {
+      val squares =
+        for (r <- 0 until 8) yield {
+          for (c <- 0 until 8) yield {
+            if (r == pos.row && c == pos.col) square else this.squares(r)(c)
+          }
+        }
+
+      Board(
+        squares = squares.map(_.toList).toList,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    }
+    def updateWhoseMove(whoseMove: Color): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    def updateCastleStatus(piece: Piece, status: Boolean): Board = {
+      val castleStatus = if (piece.color == Black && piece.pieceType == Queen) {
+        CastleStatus(
+          blackQueen = status,
+          blackKing = this.castleStatus.blackKing,
+          whiteQueen = this.castleStatus.whiteQueen,
+          whiteKing = this.castleStatus.whiteKing
+        )
+      } else if (piece.color == Black && piece.pieceType == King) {
+        CastleStatus(
+          blackQueen = this.castleStatus.blackQueen,
+          blackKing = status,
+          whiteQueen = this.castleStatus.whiteQueen,
+          whiteKing = this.castleStatus.whiteKing
+        )
+      } else if (piece.color == White && piece.pieceType == Queen) {
+        CastleStatus(
+          blackQueen = status,
+          blackKing = this.castleStatus.blackKing,
+          whiteQueen = this.castleStatus.whiteQueen,
+          whiteKing = this.castleStatus.whiteKing
+        )
+      } else if (piece.color == White && piece.pieceType == King) {
+        CastleStatus(
+          blackQueen = status,
+          blackKing = this.castleStatus.blackKing,
+          whiteQueen = this.castleStatus.whiteQueen,
+          whiteKing = this.castleStatus.whiteKing
+        )
+      } else throw new Exception("Wrong piece type for castle status update.")
+
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    }
+
+    def updateEnPassantTarget(enPassantTarget: Position): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    def updateHalfMoveClock(halfMoveClock: Int): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    def updateFullMoveCount(fullMoveCount: Int): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    def addWhiteCapturedPiece(piece: Piece): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = piece :: this.whiteCapturedPieces,
+        blackCapturedPieces = this.blackCapturedPieces
+      )
+    def addBlackCapturedPiece(piece: Piece): Board =
+      Board(
+        squares = this.squares,
+        whoseMove = this.whoseMove,
+        castleStatus = this.castleStatus,
+        enPassantTarget = this.enPassantTarget,
+        halfMoveClock = this.halfMoveClock,
+        fullMoveCount = this.fullMoveCount,
+        whiteCapturedPieces = this.whiteCapturedPieces,
+        blackCapturedPieces = piece :: this.blackCapturedPieces
+      )
   }
 
   object Board {
