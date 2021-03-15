@@ -85,11 +85,9 @@ export function getPieceType(piece) {
 }
 
 export function initialiseChessBoard() {
-  const gameState = parseFenString(
+  return parseFenString(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
-  console.log(gameState);
-  return gameState;
   // return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
 }
 

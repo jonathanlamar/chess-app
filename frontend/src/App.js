@@ -52,12 +52,21 @@ export default class App extends React.Component {
 
     if (getPieceColor(movingPiece) !== this.gameState.whoseMove) {
       // Can't move other players pieces
-      return this.updateGameState(r, c, r, c);
+      // return this.updateGameState(r, c, r, c);
+      // FIXME: This can't be inside of an async function..?
+      this.mobilePieceHomeSquare = "NONE";
+      this.validMovesSquares = [];
+      this.forceUpdate();
+      return { r, c };
     }
 
     // No op invalid moves
     if (!this.validMovesSquares.includes(rcToFileRank(newR, newC))) {
-      return this.updateGameState(r, c, r, c);
+      // return this.updateGameState(r, c, r, c);
+      this.mobilePieceHomeSquare = "NONE";
+      this.validMovesSquares = [];
+      this.forceUpdate();
+      return { r, c };
     }
 
     return this.updateGameState(r, c, newR, newC);
@@ -79,22 +88,17 @@ export default class App extends React.Component {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
 
+    // Query board updating logic from backend
     const movingPieceFileRank = rcToFileRank(r, c);
     const destinationFileRank = rcToFileRank(newR, newC);
     const fenString = toFenString(this.gameState);
-    console.log(
-      "Calling api on ",
-      fenString,
-      movingPieceFileRank,
-      destinationFileRank
-    );
     const { data: updatedGameState } = await api.getUpdatedBoard(
       fenString,
       movingPieceFileRank,
       destinationFileRank
     );
-    console.log("API response: ", updatedGameState);
 
+    // Update board
     this.gameState = parseFenString(updatedGameState.fen);
     this.blackCapturedPieces = this.blackCapturedPieces.concat(
       updatedGameState.black
@@ -106,7 +110,7 @@ export default class App extends React.Component {
     this.gameState.whoseMove =
       this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
 
-    // Pawn promotion
+    // Trigger pawn promotion state
     const movingPiece = this.gameState.squares[r][c];
     if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
       this.isAwaitingPawnPromotion = true;
