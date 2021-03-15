@@ -98,6 +98,17 @@ export default class App extends React.Component {
       destinationFileRank
     );
 
+    // Trigger pawn promotion state
+    const movingPiece = this.gameState.squares[r][c];
+    if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
+    }
+    if (movingPiece === (Pieces.BLACK | Pieces.PAWN) && newR === 7) {
+      this.isAwaitingPawnPromotion = true;
+      this.pawnPromotionLocation = { r: newR, c: newC };
+    }
+
     // Update board
     this.gameState = parseFenString(updatedGameState.fen);
     this.blackCapturedPieces = this.blackCapturedPieces.concat(
@@ -109,17 +120,6 @@ export default class App extends React.Component {
 
     this.gameState.whoseMove =
       this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
-
-    // Trigger pawn promotion state
-    const movingPiece = this.gameState.squares[r][c];
-    if (movingPiece === (Pieces.WHITE | Pieces.PAWN) && newR === 0) {
-      this.isAwaitingPawnPromotion = true;
-      this.pawnPromotionLocation = { r: newR, c: newC };
-    }
-    if (movingPiece === (Pieces.BLACK | Pieces.PAWN) && newR === 7) {
-      this.isAwaitingPawnPromotion = true;
-      this.pawnPromotionLocation = { r: newR, c: newC };
-    }
 
     this.forceUpdate();
     return { r: newR, c: newC };
