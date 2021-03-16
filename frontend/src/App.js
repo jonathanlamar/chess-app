@@ -7,7 +7,6 @@ import { Pieces, Player } from "./constants";
 import {
   initialiseChessBoard,
   getPieceColor,
-  getPieceType,
   rcToFileRank,
   toFenString,
   parseFenString,
