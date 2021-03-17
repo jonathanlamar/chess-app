@@ -22,23 +22,29 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
   implicit val typeWrites: Writes[PieceType] = JsPath.write[String].contramap(_.toString)
   implicit val pieceWrites: Writes[Piece] =
     (JsPath \ "color").write[Color].and((JsPath \ "type").write[PieceType])(unlift(Piece.unapply))
-  implicit val boardWrites: Writes[GameState] =
+  implicit val boardWrites: Writes[JsonFriendlyGameState] =
     (JsPath \ "fen")
       .write[String]
       .and((JsPath \ "whiteCapturedPieces").write[List[Piece]])
-      .and((JsPath \ "blackCapturedPieces").write[List[Piece]])(unlift(GameState.unapply))
+      .and((JsPath \ "blackCapturedPieces").write[List[Piece]])(
+        unlift(JsonFriendlyGameState.unapply)
+      )
 
   // I don't understand this syntax very well, but this is the only way I know
   // to coax the desired format.
-  case class GameState(
+  case class JsonFriendlyGameState(
       fenString: String,
       blackCapturedPieces: List[Piece],
       whiteCapturedPieces: List[Piece]
   )
 
-  object GameState {
-    def apply(board: Board): GameState =
-      GameState(toFenString(board), board.whiteCapturedPieces, board.blackCapturedPieces)
+  object JsonFriendlyGameState {
+    def apply(gameState: GameState): JsonFriendlyGameState =
+      JsonFriendlyGameState(
+        toFenString(gameState),
+        gameState.whiteCapturedPieces,
+        gameState.blackCapturedPieces
+      )
   }
 
   def getAll(
@@ -46,14 +52,14 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
       movingPieceFileRank: String,
       destinationFileRank: String
   ): Action[AnyContent] = Action {
-    val board = Board(URLDecoder.decode(fenString))
+    val gameState = GameState(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
     val destinationPos = Position(destinationFileRank)
 
-    val updatedBoard: Board = updateGameState(board, movingPiecePos, destinationPos)
+    val updatedBoard: GameState = updateGameState(gameState, movingPiecePos, destinationPos)
 
     // TODO: Try logic for exception handling
-    val json = Json.toJson(GameState(updatedBoard))
+    val json = Json.toJson(JsonFriendlyGameState(updatedBoard))
 
     Ok(json)
   }

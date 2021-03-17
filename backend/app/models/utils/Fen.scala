@@ -40,7 +40,7 @@ object Fen {
 
   val zeroCharValue = 48 // Is this universal?
 
-  def parseFenString(fenString: String): Board = {
+  def parseFenString(fenString: String): GameState = {
     // TODO - Functional exception handling
     // FIXME - this regex is broken
     // if (!fenRegex.matches(fenString)) throw new Exception("Not a valid FEN string.")
@@ -54,7 +54,7 @@ object Fen {
     val halfMoveClock = fenParts(4).toInt
     val fullMoveCount = fenParts(5).toInt
 
-    Board(squares, whoseMove, castleStatus, enPassantTarget, halfMoveClock, fullMoveCount)
+    GameState(squares, whoseMove, castleStatus, enPassantTarget, halfMoveClock, fullMoveCount)
   }
 
   def parseFenBoardRep(boardRep: String): List[List[Square]] = {
@@ -79,17 +79,17 @@ object Fen {
     castleFenPart.indexOf("Q") != -1
   )
 
-  def toFenString(board: Board): String = {
-    val fenBoard = toFenBoard(board.squares)
-    val whoseMove = board.whoseMove match {
+  def toFenString(gameState: GameState): String = {
+    val fenBoard = toFenBoard(gameState.squares)
+    val whoseMove = gameState.whoseMove match {
       case Black => "b"
       case White => "w"
     }
-    val castleStatus = toFenCastleStatus(board.castleStatus)
+    val castleStatus = toFenCastleStatus(gameState.castleStatus)
     val enPassantTarget =
-      if (board.enPassantTarget != null) board.enPassantTarget.toFileRank() else "-"
-    val halfMoveClock = board.halfMoveClock.toString()
-    val fullMoveCount = board.fullMoveCount.toString()
+      if (gameState.enPassantTarget != null) gameState.enPassantTarget.toFileRank() else "-"
+    val halfMoveClock = gameState.halfMoveClock.toString()
+    val fullMoveCount = gameState.fullMoveCount.toString()
 
     return List(
       fenBoard,

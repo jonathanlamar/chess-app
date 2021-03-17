@@ -19,6 +19,42 @@ export default class App extends React.Component {
     this.gameState = initialiseChessBoard();
     this.whiteCapturedPieces = [];
     this.blackCapturedPieces = [];
+    this.blackPiecesIndex = [
+      "a8",
+      "b8",
+      "c8",
+      "d8",
+      "e8",
+      "f8",
+      "g8",
+      "h8",
+      "a7",
+      "b7",
+      "c7",
+      "d7",
+      "e7",
+      "f7",
+      "g7",
+      "h7",
+    ];
+    this.whitePiecesIndex = [
+      "a2",
+      "b2",
+      "c2",
+      "d2",
+      "e2",
+      "f2",
+      "g2",
+      "h2",
+      "a1",
+      "b1",
+      "c1",
+      "d1",
+      "e1",
+      "f1",
+      "g1",
+      "h1",
+    ];
     // When a piece is lifted, this holds its original board position in
     // rank-file notation, i.e., e5 for [4, 3].
     this.mobilePieceHomeSquare = "NONE";

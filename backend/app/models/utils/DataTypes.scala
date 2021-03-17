@@ -124,7 +124,7 @@ object DataTypes {
     }
   }
 
-  case class Board(
+  case class GameState(
       squares: List[List[Square]],
       whoseMove: Color,
       castleStatus: CastleStatus,
@@ -138,7 +138,7 @@ object DataTypes {
       squares.map(_.mkString + "\n").mkString
     }
 
-    def transform(f: Board => Board): Board = f(this)
+    def transform(f: GameState => GameState): GameState = f(this)
 
     lazy val blackPiecesIndex: List[Position] = {
       (for (
@@ -153,7 +153,7 @@ object DataTypes {
     }
 
     // TODO: These are ugly.  Should really use builder pattern here.
-    def updateSquare(pos: Position, square: Square): Board = {
+    def updateSquare(pos: Position, square: Square): GameState = {
       val squares =
         for (r <- 0 until 8) yield {
           for (c <- 0 until 8) yield {
@@ -161,7 +161,7 @@ object DataTypes {
           }
         }
 
-      Board(
+      GameState(
         squares = squares.map(_.toList).toList,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -172,8 +172,8 @@ object DataTypes {
         blackCapturedPieces = this.blackCapturedPieces
       )
     }
-    def updateWhoseMove(whoseMove: Color): Board =
-      Board(
+    def updateWhoseMove(whoseMove: Color): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = whoseMove,
         castleStatus = this.castleStatus,
@@ -183,7 +183,7 @@ object DataTypes {
         whiteCapturedPieces = this.whiteCapturedPieces,
         blackCapturedPieces = this.blackCapturedPieces
       )
-    def updateCastleStatus(piece: Piece, status: Boolean): Board = {
+    def updateCastleStatus(piece: Piece, status: Boolean): GameState = {
       val castleStatus = if (piece.color == Black && piece.pieceType == Queen) {
         CastleStatus(
           blackQueen = status,
@@ -214,7 +214,7 @@ object DataTypes {
         )
       } else throw new Exception("Wrong piece type for castle status update.")
 
-      Board(
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = castleStatus,
@@ -226,8 +226,8 @@ object DataTypes {
       )
     }
 
-    def updateEnPassantTarget(enPassantTarget: Position): Board =
-      Board(
+    def updateEnPassantTarget(enPassantTarget: Position): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -237,8 +237,8 @@ object DataTypes {
         whiteCapturedPieces = this.whiteCapturedPieces,
         blackCapturedPieces = this.blackCapturedPieces
       )
-    def updateHalfMoveClock(halfMoveClock: Int): Board =
-      Board(
+    def updateHalfMoveClock(halfMoveClock: Int): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -248,8 +248,8 @@ object DataTypes {
         whiteCapturedPieces = this.whiteCapturedPieces,
         blackCapturedPieces = this.blackCapturedPieces
       )
-    def updateFullMoveCount(fullMoveCount: Int): Board =
-      Board(
+    def updateFullMoveCount(fullMoveCount: Int): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -259,8 +259,8 @@ object DataTypes {
         whiteCapturedPieces = this.whiteCapturedPieces,
         blackCapturedPieces = this.blackCapturedPieces
       )
-    def addWhiteCapturedPiece(piece: Piece): Board =
-      Board(
+    def addWhiteCapturedPiece(piece: Piece): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -270,8 +270,8 @@ object DataTypes {
         whiteCapturedPieces = piece :: this.whiteCapturedPieces,
         blackCapturedPieces = this.blackCapturedPieces
       )
-    def addBlackCapturedPiece(piece: Piece): Board =
-      Board(
+    def addBlackCapturedPiece(piece: Piece): GameState =
+      GameState(
         squares = this.squares,
         whoseMove = this.whoseMove,
         castleStatus = this.castleStatus,
@@ -283,7 +283,7 @@ object DataTypes {
       )
   }
 
-  object Board {
-    def apply(fenString: String): Board = parseFenString(fenString)
+  object GameState {
+    def apply(fenString: String): GameState = parseFenString(fenString)
   }
 }
