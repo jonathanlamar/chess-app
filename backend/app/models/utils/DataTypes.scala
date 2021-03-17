@@ -135,7 +135,10 @@ object DataTypes {
       blackCapturedPieces: List[Piece] = Nil
   ) {
     override def toString(): String = {
-      squares.map(_.mkString + "\n").mkString
+      squares
+        .map(row => row.foldLeft("-" * 17 + "\n|")((str, s) => str + s.toString() + "|"))
+        .map(_ + "\n")
+        .mkString + "-" * 17
     }
 
     def transform(f: GameState => GameState): GameState = f(this)
