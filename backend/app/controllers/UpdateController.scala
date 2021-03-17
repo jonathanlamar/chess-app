@@ -25,15 +25,15 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
   implicit val boardWrites: Writes[GameState] =
     (JsPath \ "fen")
       .write[String]
-      .and((JsPath \ "white").write[List[Piece]])
-      .and((JsPath \ "black").write[List[Piece]])(unlift(GameState.unapply))
+      .and((JsPath \ "whiteCapturedPieces").write[List[Piece]])
+      .and((JsPath \ "blackCapturedPieces").write[List[Piece]])(unlift(GameState.unapply))
 
   // I don't understand this syntax very well, but this is the only way I know
   // to coax the desired format.
   case class GameState(
       fenString: String,
-      whiteCapturedPieces: List[Piece],
-      blackCapturedPieces: List[Piece]
+      blackCapturedPieces: List[Piece],
+      whiteCapturedPieces: List[Piece]
   )
 
   object GameState {

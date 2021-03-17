@@ -111,10 +111,10 @@ export default class App extends React.Component {
     // Update board
     this.gameState = parseFenString(updatedGameState.fen);
     this.blackCapturedPieces = this.blackCapturedPieces.concat(
-      updatedGameState.black
+      updatedGameState.blackCapturedPieces
     );
     this.whiteCapturedPieces = this.whiteCapturedPieces.concat(
-      updatedGameState.white
+      updatedGameState.whiteCapturedPieces
     );
 
     this.gameState.whoseMove =
