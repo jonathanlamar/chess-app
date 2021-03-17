@@ -52,8 +52,9 @@ object UpdateGameState {
             gameState.enPassantTarget.col
           ) match {
             case p: Piece => {
-              gameState.addBlackCapturedPiece(p)
-              gameState.updateSquare(gameState.enPassantTarget + Position(-1, 0), Blank)
+              gameState
+                .addBlackCapturedPiece(p)
+                .updateSquare(gameState.enPassantTarget + Position(-1, 0), Blank)
             }
             case Blank => throw new Exception("En Passant capture is blank")
           }
@@ -63,8 +64,9 @@ object UpdateGameState {
             gameState.enPassantTarget.col
           ) match {
             case p: Piece => {
-              gameState.addWhiteCapturedPiece(p)
-              gameState.updateSquare(gameState.enPassantTarget + Position(1, 0), Blank)
+              gameState
+                .addWhiteCapturedPiece(p)
+                .updateSquare(gameState.enPassantTarget + Position(1, 0), Blank)
             }
             case Blank => throw new Exception("En Passant capture is blank")
           }
@@ -75,12 +77,10 @@ object UpdateGameState {
         case p: Piece =>
           piece.color match {
             case Black => {
-              gameState.addBlackCapturedPiece(p)
-              gameState.updateSquare(destinationPos, Blank)
+              gameState.addBlackCapturedPiece(p).updateSquare(destinationPos, Blank)
             }
             case White => {
-              gameState.addWhiteCapturedPiece(p)
-              gameState.updateSquare(destinationPos, Blank)
+              gameState.addWhiteCapturedPiece(p).updateSquare(destinationPos, Blank)
             }
           }
         case Blank => gameState

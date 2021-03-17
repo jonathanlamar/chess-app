@@ -132,6 +132,7 @@ export default class App extends React.Component {
       movingPieceFileRank,
       destinationFileRank
     );
+    console.log(updatedGameState);
 
     // Trigger pawn promotion state
     const movingPiece = this.gameState.squares[r][c];
