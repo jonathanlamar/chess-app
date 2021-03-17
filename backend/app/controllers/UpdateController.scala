@@ -17,11 +17,7 @@ import play.api.mvc._
 class UpdateController @Inject() (val controllerComponents: ControllerComponents)
     extends BaseController {
 
-  // TODO: WTF is going on here.
-  implicit val colorWrites: Writes[Color] = JsPath.write[String].contramap(_.toString)
-  implicit val typeWrites: Writes[PieceType] = JsPath.write[String].contramap(_.toString)
-  implicit val pieceWrites: Writes[Piece] =
-    (JsPath \ "color").write[Color].and((JsPath \ "type").write[PieceType])(unlift(Piece.unapply))
+  implicit val pieceWrites: Writes[Piece] = Writes[Piece](p => JsString(p.toString()))
   implicit val boardWrites: Writes[JsonFriendlyGameState] =
     (JsPath \ "fen")
       .write[String]
@@ -42,8 +38,8 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
     def apply(gameState: GameState): JsonFriendlyGameState =
       JsonFriendlyGameState(
         toFenString(gameState),
-        gameState.whiteCapturedPieces,
-        gameState.blackCapturedPieces
+        gameState.blackCapturedPieces,
+        gameState.whiteCapturedPieces
       )
   }
 

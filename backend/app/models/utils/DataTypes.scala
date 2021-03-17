@@ -8,10 +8,10 @@ object DataTypes {
   sealed trait Color
 
   final object White extends Color {
-    override def toString(): String = "White"
+    override def toString(): String = "W"
   }
   final object Black extends Color {
-    override def toString(): String = "Black"
+    override def toString(): String = "B"
   }
 
   case class Player(color: Color)
@@ -19,22 +19,22 @@ object DataTypes {
   sealed trait PieceType
 
   final object King extends PieceType {
-    override def toString(): String = "King"
+    override def toString(): String = "K"
   }
   final object Queen extends PieceType {
-    override def toString(): String = "Queen"
+    override def toString(): String = "Q"
   }
   final object Bishop extends PieceType {
-    override def toString(): String = "Bishop"
+    override def toString(): String = "B"
   }
   final object Knight extends PieceType {
-    override def toString(): String = "Knight"
+    override def toString(): String = "N"
   }
   final object Rook extends PieceType {
-    override def toString(): String = "Rook"
+    override def toString(): String = "R"
   }
   final object Pawn extends PieceType {
-    override def toString(): String = "Pawn"
+    override def toString(): String = "P"
   }
 
   sealed trait Square {
