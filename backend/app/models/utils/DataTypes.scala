@@ -140,6 +140,18 @@ object DataTypes {
 
     def transform(f: Board => Board): Board = f(this)
 
+    lazy val blackPiecesIndex: List[Position] = {
+      (for (
+        r <- 0 until 8; c <- 0 until 8 if !squares(r)(c).isBlank && squares(r)(c).color == Black
+      ) yield Position(r, c)).toList
+    }
+
+    lazy val whitePiecesIndex: List[Position] = {
+      (for (
+        r <- 0 until 8; c <- 0 until 8 if !squares(r)(c).isBlank && squares(r)(c).color == White
+      ) yield Position(r, c)).toList
+    }
+
     // TODO: These are ugly.  Should really use builder pattern here.
     def updateSquare(pos: Position, square: Square): Board = {
       val squares =
