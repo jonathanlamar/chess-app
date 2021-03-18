@@ -200,17 +200,17 @@ object DataTypes {
         )
       } else if (piece.color == White && piece.pieceType == Queen) {
         CastleStatus(
-          blackQueen = status,
+          blackQueen = this.castleStatus.blackQueen,
           blackKing = this.castleStatus.blackKing,
-          whiteQueen = this.castleStatus.whiteQueen,
+          whiteQueen = status,
           whiteKing = this.castleStatus.whiteKing
         )
       } else if (piece.color == White && piece.pieceType == King) {
         CastleStatus(
-          blackQueen = status,
+          blackQueen = this.castleStatus.blackQueen,
           blackKing = this.castleStatus.blackKing,
           whiteQueen = this.castleStatus.whiteQueen,
-          whiteKing = this.castleStatus.whiteKing
+          whiteKing = status
         )
       } else throw new Exception("Wrong piece type for castle status update.")
 

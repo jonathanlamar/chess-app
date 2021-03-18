@@ -26,7 +26,7 @@ object UpdateGameState {
           .transform(handleCapture(p, destinationSquare, destinationPos))
           .transform(handleCastling(movingPiecePos, p, destinationPos))
           .transform(updateEnPassantTarget(movingPiecePos, p, destinationPos))
-          .transform(updateCastleStatus(p, movingPiecePos))
+          .transform(updateCastleStatus(p, movingPiecePos, destinationPos))
           .transform(updatePiecePosition(movingPiecePos, p, destinationPos))
           .transform(updateWhoseMove)
       }
@@ -114,10 +114,10 @@ object UpdateGameState {
       gameState.updateEnPassantTarget(
         Position((movingPiecePos.row + destinationPos.row) / 2, movingPiecePos.col)
       )
-    } else gameState
+    } else gameState.updateEnPassantTarget(null)
   }
 
-  def updateCastleStatus(movingPiece: Piece, movingPiecePos: Position)(
+  def updateCastleStatus(movingPiece: Piece, movingPiecePos: Position, destinationPos: Position)(
       gameState: GameState
   ): GameState = {
     movingPiece.pieceType match {
@@ -136,7 +136,16 @@ object UpdateGameState {
               gameState.updateCastleStatus(Piece(Black, King), false)
             } else gameState
         }
-      case _ => gameState
+      case _ =>
+        if (destinationPos == Position(0, 0))
+          gameState.updateCastleStatus(Piece(Black, Queen), false)
+        else if (destinationPos == Position(0, 7))
+          gameState.updateCastleStatus(Piece(Black, King), false)
+        else if (destinationPos == Position(7, 0))
+          gameState.updateCastleStatus(Piece(White, Queen), false)
+        else if (destinationPos == Position(7, 7))
+          gameState.updateCastleStatus(Piece(White, King), false)
+        else gameState
     }
   }
 
