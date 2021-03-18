@@ -148,6 +148,7 @@ export default class App extends LoggyComponent {
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
           isAwaitingPawnPromotion={this.isAwaitingPawnPromotion}
+          currentPlayerInCheck={this.currentPlayerInCheck}
           pawnPromotionColor={
             this.isAwaitingPawnPromotion
               ? getPieceColor(

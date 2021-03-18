@@ -45,6 +45,11 @@ export default class GameInfo extends React.Component {
           <div>
             <h3>
               {playerString + " to move.\t"}
+              {this.props.currentPlayerInCheck ? "In check" : ""}
+            </h3>
+          </div>
+          <div>
+            <h3>
               {"Full move count: " + this.props.fullMoveCount + "\t"}
               {"Half move clock: " + this.props.halfMoveClock + "\t"}
             </h3>
