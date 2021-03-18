@@ -1,5 +1,7 @@
 package models.rules
 
+import models.rules.Check.isCurrentPlayerInCheck
+import models.rules.UpdateGameState.updateGameState
 import models.utils.DataTypes._
 
 /** Logic for generating all valid moves for a piece.
@@ -9,8 +11,12 @@ import models.utils.DataTypes._
   */
 object ValidMoves {
 
-  def allPossibleMoves(gameState: GameState, pos: Position): List[Position] = {
-    gameState.squares(pos.row)(pos.col) match {
+  def allPossibleMoves(
+      gameState: GameState,
+      pos: Position,
+      isInCheck: Boolean = false
+  ): List[Position] = {
+    val pseudoLegalMoves = gameState.squares(pos.row)(pos.col) match {
       case Piece(color, pieceType) =>
         if (color != gameState.whoseMove) throw new Exception("Wrong color to move")
         else
@@ -24,6 +30,16 @@ object ValidMoves {
           }
       case Blank => throw new Exception("No piece at position")
     }
+
+    if (isInCheck) {
+      pseudoLegalMoves.filter(newPos =>
+        !isCurrentPlayerInCheck(
+          gameState
+            .updateSquare(pos, Blank)
+            .updateSquare(newPos, gameState.squares(pos.row)(pos.col))
+        )
+      )
+    } else pseudoLegalMoves
   }
 
   def allPossibleKingMoves(gameState: GameState, pos: Position, color: Color): List[Position] = {

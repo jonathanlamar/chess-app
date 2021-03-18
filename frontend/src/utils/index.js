@@ -38,34 +38,35 @@ export function xyToRc(x, y) {
 }
 
 export function getPieceImage(squareVal) {
-  if (squareVal === (Pieces.WHITE | Pieces.PAWN)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg";
-  } else if (squareVal === (Pieces.WHITE | Pieces.KNIGHT)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg";
-  } else if (squareVal === (Pieces.WHITE | Pieces.ROOK)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg";
-  } else if (squareVal === (Pieces.WHITE | Pieces.BISHOP)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg";
-  } else if (squareVal === (Pieces.WHITE | Pieces.QUEEN)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg";
-  } else if (squareVal === (Pieces.WHITE | Pieces.KING)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.PAWN)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.KNIGHT)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.ROOK)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.BISHOP)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.QUEEN)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg";
-  } else if (squareVal === (Pieces.BLACK | Pieces.KING)) {
-    return "https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg";
-  } else if (squareVal === Pieces.NONE) {
-    return null;
-  } else {
-    throw "Error occured with getPieceImage.";
+  switch (squareVal) {
+    case Pieces.WHITE | Pieces.PAWN:
+      return "https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg";
+    case Pieces.WHITE | Pieces.KNIGHT:
+      return "https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg";
+    case Pieces.WHITE | Pieces.ROOK:
+      return "https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg";
+    case Pieces.WHITE | Pieces.BISHOP:
+      return "https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg";
+    case Pieces.WHITE | Pieces.QUEEN:
+      return "https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg";
+    case Pieces.WHITE | Pieces.KING:
+      return "https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg";
+    case Pieces.BLACK | Pieces.PAWN:
+      return "https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg";
+    case Pieces.BLACK | Pieces.KNIGHT:
+      return "https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg";
+    case Pieces.BLACK | Pieces.ROOK:
+      return "https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg";
+    case Pieces.BLACK | Pieces.BISHOP:
+      return "https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg";
+    case Pieces.BLACK | Pieces.QUEEN:
+      return "https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg";
+    case Pieces.BLACK | Pieces.KING:
+      return "https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg";
+    case Pieces.NONE:
+      return null;
+    default:
+      throw "Error occured with getPieceImage.";
   }
 }
 
@@ -82,6 +83,35 @@ export function getPieceColor(piece) {
 
 export function getPieceType(piece) {
   return piece % 8;
+}
+
+export function convertApiPieceToNative(apiPiece) {
+  switch (apiPiece) {
+    case "p":
+      return Pieces.BLACK | Pieces.PAWN;
+    case "r":
+      return Pieces.BLACK | Pieces.ROOK;
+    case "n":
+      return Pieces.BLACK | Pieces.KNIGHT;
+    case "b":
+      return Pieces.BLACK | Pieces.BISHOP;
+    case "q":
+      return Pieces.BLACK | Pieces.QUEEN;
+    case "k":
+      return Pieces.BLACK | Pieces.KING;
+    case "P":
+      return Pieces.WHITE | Pieces.PAWN;
+    case "R":
+      return Pieces.WHITE | Pieces.ROOK;
+    case "N":
+      return Pieces.WHITE | Pieces.KNIGHT;
+    case "B":
+      return Pieces.WHITE | Pieces.BISHOP;
+    case "Q":
+      return Pieces.WHITE | Pieces.QUEEN;
+    case "K":
+      return Pieces.WHITE | Pieces.KING;
+  }
 }
 
 export function initialiseChessBoard() {

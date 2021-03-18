@@ -2,6 +2,7 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
+import models.rules.Check.isCurrentPlayerInCheck
 import models.rules.UpdateGameState._
 import models.utils.DataTypes._
 import models.utils.Fen._

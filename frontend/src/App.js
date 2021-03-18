@@ -10,61 +10,28 @@ import {
   rcToFileRank,
   toFenString,
   parseFenString,
+  convertApiPieceToNative,
 } from "./utils";
 import * as api from "./api";
+import LoggyComponent from "./utils/loggyComponent";
 
-export default class App extends React.Component {
+export default class App extends LoggyComponent {
   constructor() {
     super();
     this.gameState = initialiseChessBoard();
     this.whiteCapturedPieces = [];
     this.blackCapturedPieces = [];
-    this.blackPiecesIndex = [
-      "a8",
-      "b8",
-      "c8",
-      "d8",
-      "e8",
-      "f8",
-      "g8",
-      "h8",
-      "a7",
-      "b7",
-      "c7",
-      "d7",
-      "e7",
-      "f7",
-      "g7",
-      "h7",
-    ];
-    this.whitePiecesIndex = [
-      "a2",
-      "b2",
-      "c2",
-      "d2",
-      "e2",
-      "f2",
-      "g2",
-      "h2",
-      "a1",
-      "b1",
-      "c1",
-      "d1",
-      "e1",
-      "f1",
-      "g1",
-      "h1",
-    ];
     // When a piece is lifted, this holds its original board position in
     // rank-file notation, i.e., e5 for [4, 3].
     this.mobilePieceHomeSquare = "NONE";
     // When a piece is lifted, this holds all possible destination squares for
     // the piece in rank-file notation.
     this.validMovesSquares = [];
-
     // For handling pawn promotion
     this.isAwaitingPawnPromotion = false;
     this.pawnPromotionLocation = null;
+    // For handling check
+    this.currentPlayerInCheck = false;
   }
 
   handleStart = async (r, c) => {
@@ -72,13 +39,12 @@ export default class App extends React.Component {
 
     const { data: validMoves } = await api.getLegalMoves(
       fenString,
-      rcToFileRank(r, c)
+      rcToFileRank(r, c),
+      this.currentPlayerInCheck
     );
 
     this.mobilePieceHomeSquare = rcToFileRank(r, c);
-    this.validMovesSquares = validMoves.map((pos) =>
-      rcToFileRank(pos.r, pos.c)
-    );
+    this.validMovesSquares = validMoves;
     this.forceUpdate();
   };
 
@@ -107,14 +73,17 @@ export default class App extends React.Component {
     return this.updateGameState(r, c, newR, newC);
   };
 
-  promotePawn = (newPiece) => {
-    console.log("Promoting pawn: ", newPiece);
+  promotePawn = async (newPiece) => {
     // This will throw an error if pawnPromotionLocation is not set.
     this.gameState.squares[this.pawnPromotionLocation.r][
       this.pawnPromotionLocation.c
     ] = newPiece;
     this.isAwaitingPawnPromotion = false;
     this.pawnPromotionLocation = null;
+
+    const fenString = toFenString(this.gameState);
+    const { data: isInCheck } = await api.getCheckCondition(fenString);
+    this.currentPlayerInCheck = isInCheck;
 
     this.forceUpdate();
   };
@@ -132,7 +101,6 @@ export default class App extends React.Component {
       movingPieceFileRank,
       destinationFileRank
     );
-    console.log(updatedGameState);
 
     // Trigger pawn promotion state
     const movingPiece = this.gameState.squares[r][c];
@@ -148,14 +116,15 @@ export default class App extends React.Component {
     // Update board
     this.gameState = parseFenString(updatedGameState.fen);
     this.blackCapturedPieces = this.blackCapturedPieces.concat(
-      updatedGameState.blackCapturedPieces
+      updatedGameState.blackCapturedPieces.map(convertApiPieceToNative)
     );
     this.whiteCapturedPieces = this.whiteCapturedPieces.concat(
-      updatedGameState.whiteCapturedPieces
+      updatedGameState.whiteCapturedPieces.map(convertApiPieceToNative)
     );
-
-    this.gameState.whoseMove =
-      this.gameState.whoseMove === Player.WHITE ? Player.BLACK : Player.WHITE;
+    const { data: isInCheck } = await api.getCheckCondition(
+      updatedGameState.fen
+    );
+    this.currentPlayerInCheck = isInCheck;
 
     this.forceUpdate();
     return { r: newR, c: newC };

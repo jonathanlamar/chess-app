@@ -143,16 +143,13 @@ object DataTypes {
 
     def transform(f: GameState => GameState): GameState = f(this)
 
-    lazy val blackPiecesIndex: List[Position] = {
-      (for (
-        r <- 0 until 8; c <- 0 until 8 if !squares(r)(c).isBlank && squares(r)(c).color == Black
-      ) yield Position(r, c)).toList
-    }
-
-    lazy val whitePiecesIndex: List[Position] = {
-      (for (
-        r <- 0 until 8; c <- 0 until 8 if !squares(r)(c).isBlank && squares(r)(c).color == White
-      ) yield Position(r, c)).toList
+    lazy val piecesIndex: Map[Piece, List[Position]] = {
+      (for (r <- 0 until 8; c <- 0 until 8 if !squares(r)(c).isBlank)
+        yield squares(r)(c).asInstanceOf[Piece] -> Position(r, c)).toList
+        .groupBy(_._1)
+        .view
+        .mapValues(_.map(_._2))
+        .toMap
     }
 
     // TODO: These are ugly.  Should really use builder pattern here.

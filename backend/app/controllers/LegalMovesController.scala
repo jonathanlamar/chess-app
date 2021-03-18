@@ -16,15 +16,17 @@ import play.api.mvc._
 class LegalMovesController @Inject() (val controllerComponents: ControllerComponents)
     extends BaseController {
 
-  // TODO: WTF is going on here.
-  implicit val posWrites: Writes[Position] =
-    (JsPath \ "r").write[Int].and((JsPath \ "c").write[Int])(unlift(Position.unapply))
+  implicit val positionWrites: Writes[Position] = Writes[Position](p => JsString(p.toFileRank()))
 
-  def getAll(fenString: String, movingPieceFileRank: String): Action[AnyContent] = Action {
+  def getAll(
+      fenString: String,
+      movingPieceFileRank: String,
+      isInCheck: Boolean
+  ): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
 
-    val json = Json.toJson(allPossibleMoves(gameState, movingPiecePos))
+    val json = Json.toJson(allPossibleMoves(gameState, movingPiecePos, isInCheck))
     // TODO: Try logic for exception handling
     Ok(json)
   }

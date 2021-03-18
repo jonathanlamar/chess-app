@@ -28,6 +28,7 @@ object UpdateGameState {
           .transform(updateEnPassantTarget(movingPiecePos, p, destinationPos))
           .transform(updateCastleStatus(p, movingPiecePos))
           .transform(updatePiecePosition(movingPiecePos, p, destinationPos))
+          .transform(updateWhoseMove)
       }
     }
   }
@@ -143,5 +144,12 @@ object UpdateGameState {
       gameState: GameState
   ): GameState = {
     gameState.updateSquare(movingPiecePos, Blank).updateSquare(destinationPos, movingPiece)
+  }
+
+  def updateWhoseMove(gameState: GameState): GameState = {
+    gameState.whoseMove match {
+      case Black => gameState.updateWhoseMove(White)
+      case White => gameState.updateWhoseMove(Black)
+    }
   }
 }
