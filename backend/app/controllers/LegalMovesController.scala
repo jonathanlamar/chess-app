@@ -20,17 +20,11 @@ class LegalMovesController @Inject() (val controllerComponents: ControllerCompon
 
   implicit val positionWrites: Writes[Position] = Writes[Position](p => JsString(p.toFileRank()))
 
-  def getAll(
-      fenString: String,
-      movingPieceFileRank: String,
-      isInCheck: Boolean
-  ): Action[AnyContent] = Action {
+  def getAll(fenString: String, movingPieceFileRank: String): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
 
-    val pseudoLegalMoves = allPossibleMoves(gameState, movingPiecePos)
-
-    val legalMoves = pseudoLegalMoves.filter(newPos =>
+    val legalMoves = allPossibleMoves(gameState, movingPiecePos).filter(newPos =>
       !isPlayerInCheck(updateGameState(gameState, movingPiecePos, newPos), gameState.whoseMove)
     )
 

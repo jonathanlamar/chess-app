@@ -39,8 +39,7 @@ export default class App extends LoggyComponent {
 
     const { data: validMoves } = await api.getLegalMoves(
       fenString,
-      rcToFileRank(r, c),
-      this.currentPlayerInCheck
+      rcToFileRank(r, c)
     );
 
     this.mobilePieceHomeSquare = rcToFileRank(r, c);
