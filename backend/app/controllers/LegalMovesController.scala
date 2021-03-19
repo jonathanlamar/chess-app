@@ -2,7 +2,9 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
-import models.rules.ValidMoves._
+import models.rules.Check.isPlayerInCheck
+import models.rules.UpdateGameState.updateGameState
+import models.rules.ValidMoves.allPossibleMoves
 import models.utils.DataTypes._
 import play.api._
 import play.api.libs.functional.syntax._
@@ -26,7 +28,13 @@ class LegalMovesController @Inject() (val controllerComponents: ControllerCompon
     val gameState = GameState(URLDecoder.decode(fenString))
     val movingPiecePos = Position(movingPieceFileRank)
 
-    val json = Json.toJson(allPossibleMoves(gameState, movingPiecePos, isInCheck))
+    val pseudoLegalMoves = allPossibleMoves(gameState, movingPiecePos)
+
+    val legalMoves = pseudoLegalMoves.filter(newPos =>
+      !isPlayerInCheck(updateGameState(gameState, movingPiecePos, newPos), gameState.whoseMove)
+    )
+
+    val json = Json.toJson(legalMoves)
     // TODO: Try logic for exception handling
     Ok(json)
   }

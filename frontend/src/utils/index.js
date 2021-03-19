@@ -118,7 +118,7 @@ export function initialiseChessBoard() {
   return parseFenString(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
-  // return parseFenString("N2qR3/bp6/8/8/8/8/8/2P4k1 b - - 0 1"); // For testing
+  // return parseFenString("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 b - - 0 1"); // For testing
 }
 
 export function parseFenString(fenString) {

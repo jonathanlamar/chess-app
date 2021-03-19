@@ -146,7 +146,7 @@ object Fen {
   }
 
   def toFenCastleStatus(castleStatus: CastleStatus): String = {
-    List(
+    val statusLetters = List(
       castleStatus.whiteKing,
       castleStatus.whiteQueen,
       castleStatus.blackKing,
@@ -155,6 +155,8 @@ object Fen {
       .zip(List("K", "Q", "k", "q"))
       .filter(_._1)
       .map(_._2)
-      .reduce(_ + _)
+
+      if (!statusLetters.isEmpty) statusLetters.reduce(_ + _)
+      else "-"
   }
 }

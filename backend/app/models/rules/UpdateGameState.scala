@@ -136,6 +136,10 @@ object UpdateGameState {
               gameState.updateCastleStatus(Piece(Black, King), false)
             } else gameState
         }
+      case King =>
+        gameState
+          .updateCastleStatus(Piece(movingPiece.color, King), false)
+          .updateCastleStatus(Piece(movingPiece.color, Queen), false)
       case _ =>
         if (destinationPos == Position(0, 0))
           gameState.updateCastleStatus(Piece(Black, Queen), false)

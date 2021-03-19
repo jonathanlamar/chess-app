@@ -17,13 +17,16 @@ object Check {
       .distinct
   }
 
-  def isCurrentPlayerInCheck(gameState: GameState): Boolean = {
+  def isCurrentPlayerInCheck(gameState: GameState): Boolean =
+    isPlayerInCheck(gameState, gameState.whoseMove)
+
+  def isPlayerInCheck(gameState: GameState, color: Color): Boolean = {
     val attackSquares =
-      if (gameState.whoseMove == White) getAttackSquares(gameState, Black)
+      if (color == White) getAttackSquares(gameState, Black)
       else getAttackSquares(gameState, White)
 
     // TODO: Good use for Try block
-    gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
+    gameState.piecesIndex.get(Piece(color, King)) match {
       case None => throw new Exception("No king key in index")
       case Some(posList) =>
         posList.headOption match {
