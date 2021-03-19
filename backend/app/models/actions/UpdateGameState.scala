@@ -1,4 +1,4 @@
-package models.rules
+package models.actions
 
 import models.utils.DataTypes._
 import scala.math.{abs, signum}

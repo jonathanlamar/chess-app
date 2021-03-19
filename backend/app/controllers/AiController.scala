@@ -2,7 +2,7 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
-import models.ai.RandomAi
+import models.ai.random.RandomAi
 import models.utils.DataTypes._
 import models.utils.Fen._
 import play.api._

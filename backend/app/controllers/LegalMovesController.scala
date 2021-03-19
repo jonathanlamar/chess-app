@@ -2,8 +2,8 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
+import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.isPlayerInCheck
-import models.rules.UpdateGameState.updateGameState
 import models.rules.ValidMoves.getLegalMoves
 import models.utils.DataTypes._
 import play.api._

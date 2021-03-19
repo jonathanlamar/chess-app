@@ -1,12 +1,12 @@
-package models.ai
+package models.ai.random
 
-import models.rules.UpdateGameState.{updateGameState, promotePawn}
+import models.actions.UpdateGameState.{updateGameState, promotePawn}
 import models.rules.ValidMoves.getLegalMoves
 import models.utils.DataTypes._
 import scala.util.Random
 
-object RandomAi extends Ai {
-  override def makeMove(gameState: GameState): GameState = {
+object RandomAi {
+  def makeMove(gameState: GameState): GameState = {
     val allMoves: List[(Position, Position)] =
       gameState.piecesIndex.view
         .filterKeys(_.color == gameState.whoseMove)

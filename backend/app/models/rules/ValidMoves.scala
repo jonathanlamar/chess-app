@@ -1,7 +1,7 @@
 package models.rules
 
+import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
-import models.rules.UpdateGameState.updateGameState
 import models.utils.DataTypes._
 
 /** Logic for generating all valid moves for a piece.
