@@ -1,6 +1,6 @@
 package models.rules
 
-import models.rules.Check.isCurrentPlayerInCheck
+import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
 import models.rules.UpdateGameState.updateGameState
 import models.utils.DataTypes._
 
@@ -10,6 +10,12 @@ import models.utils.DataTypes._
   * made.
   */
 object ValidMoves {
+
+  def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
+    allPossibleMoves(gameState, pos).filter(newPos =>
+        !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
+    )
+  }
 
   def allPossibleMoves(gameState: GameState, pos: Position): List[Position] = {
     gameState.squares(pos.row)(pos.col) match {
