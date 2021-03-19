@@ -16,3 +16,5 @@ export const getUpdatedBoard = (
   );
 export const getCheckCondition = (fenString) =>
   axios.get(`${url}/rules/check/${encodeURIComponent(fenString)}`);
+export const getRandomAiMove = (fenString) =>
+  axios.get(`${url}/ai/random/${encodeURIComponent(fenString)}`);

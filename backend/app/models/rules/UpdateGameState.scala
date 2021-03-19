@@ -33,6 +33,14 @@ object UpdateGameState {
     }
   }
 
+  def promotePawn(gameState: GameState, pawnPos: Position, pieceType: PieceType): GameState = {
+    gameState.squares(pawnPos.row)(pawnPos.col) match {
+      case Blank              => throw new Exception("No piece at pawn location")
+      case Piece(color, Pawn) => gameState.updateSquare(pawnPos, Piece(color, pieceType))
+      case _                  => throw new Exception("Piece at pawn location is not a pawn")
+    }
+  }
+
   def updateMoveCounts(piece: Piece, destination: Square)(gameState: GameState): GameState = {
     val halfMoveClock =
       if (piece.pieceType == Pawn || destination.isBlank) 0 else gameState.halfMoveClock + 1

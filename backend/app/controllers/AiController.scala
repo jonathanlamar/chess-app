@@ -2,7 +2,7 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
-import models.rules.UpdateGameState._
+import models.ai.RandomAi
 import models.utils.DataTypes._
 import models.utils.Fen._
 import play.api._
@@ -14,7 +14,7 @@ import play.api.mvc._
   * moves generator.
   */
 @Singleton
-class UpdateController @Inject() (val controllerComponents: ControllerComponents)
+class AiController @Inject() (val controllerComponents: ControllerComponents)
     extends BaseController {
 
   implicit val pieceWrites: Writes[Piece] = Writes[Piece](p => JsString(p.toString()))
@@ -43,16 +43,10 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
       )
   }
 
-  def getAll(
-      fenString: String,
-      movingPieceFileRank: String,
-      destinationFileRank: String
-  ): Action[AnyContent] = Action {
+  def getRandom(fenString: String): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
-    val movingPiecePos = Position(movingPieceFileRank)
-    val destinationPos = Position(destinationFileRank)
 
-    val updatedBoard: GameState = updateGameState(gameState, movingPiecePos, destinationPos)
+    val updatedBoard: GameState = RandomAi.makeMove(gameState)
 
     // TODO: Try logic for exception handling
     val json = Json.toJson(JsonFriendlyGameState(updatedBoard))
