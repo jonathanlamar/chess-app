@@ -3,7 +3,7 @@ import React from "react";
 import "./index.css";
 import Board from "./components/board.js";
 import GameInfo from "./components/gameinfo.js";
-import { Pieces, Player } from "./constants";
+import { Pieces } from "./constants";
 import {
   initialiseChessBoard,
   getPieceColor,
@@ -52,7 +52,7 @@ export default class App extends LoggyComponent {
 
     if (getPieceColor(movingPiece) !== this.gameState.whoseMove) {
       // Can't move other players pieces
-      // return this.updateGameState(r, c, r, c);
+      // return this.makePlayerMove(r, c, r, c);
       // FIXME: This can't be inside of an async function..?
       this.mobilePieceHomeSquare = "NONE";
       this.validMovesSquares = [];
@@ -62,14 +62,22 @@ export default class App extends LoggyComponent {
 
     // No op invalid moves
     if (!this.validMovesSquares.includes(rcToFileRank(newR, newC))) {
-      // return this.updateGameState(r, c, r, c);
+      // return this.makePlayerMove(r, c, r, c);
       this.mobilePieceHomeSquare = "NONE";
       this.validMovesSquares = [];
       this.forceUpdate();
       return { r, c };
     }
 
-    return this.updateGameState(r, c, newR, newC);
+    return this.makePlayerMove(r, c, newR, newC);
+  };
+
+  triggerAiMove = async () => {
+    const fenString = toFenString(this.gameState);
+    const { data: updatedGameState } = await api.getRandomAiMove(fenString);
+
+    // Update board
+    this.updateGameState(updatedGameState);
   };
 
   promotePawn = async (newPiece) => {
@@ -84,10 +92,10 @@ export default class App extends LoggyComponent {
     const { data: isInCheck } = await api.getCheckCondition(fenString);
     this.currentPlayerInCheck = isInCheck;
 
-    this.forceUpdate();
+    this.triggerAiMove();
   };
 
-  updateGameState = async (r, c, newR, newC) => {
+  makePlayerMove = async (r, c, newR, newC) => {
     this.mobilePieceHomeSquare = "NONE";
     this.validMovesSquares = [];
 
@@ -113,6 +121,14 @@ export default class App extends LoggyComponent {
     }
 
     // Update board
+    this.updateGameState(updatedGameState);
+
+    if (!this.isAwaitingPawnPromotion) this.triggerAiMove();
+
+    return { r: newR, c: newC };
+  };
+
+  updateGameState = async (updatedGameState) => {
     this.gameState = parseFenString(updatedGameState.fen);
     this.blackCapturedPieces = this.blackCapturedPieces.concat(
       updatedGameState.blackCapturedPieces.map(convertApiPieceToNative)
@@ -126,7 +142,6 @@ export default class App extends LoggyComponent {
     this.currentPlayerInCheck = isInCheck;
 
     this.forceUpdate();
-    return { r: newR, c: newC };
   };
 
   render() {
