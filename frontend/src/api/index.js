@@ -10,7 +10,7 @@ export const getUpdatedBoard = (
   destinationFileRank
 ) =>
   axios.get(
-    `${url}/rules/update/${encodeURIComponent(
+    `${url}/actions/update/${encodeURIComponent(
       fenString
     )}/${movingPieceFileRank}/${destinationFileRank}`
   );

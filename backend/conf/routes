@@ -4,5 +4,5 @@
 # ~~~~
 
 GET  /rules/legal/:fen/:pos               controllers.LegalMovesController.getAll(fen: String, pos: String)
-GET  /rules/update/:fen/:startpos/:endpos  controllers.UpdateController.getAll(fen: String, startpos: String, endpos: String)
+GET  /actions/update/:fen/:startpos/:endpos  controllers.UpdateController.getAll(fen: String, startpos: String, endpos: String)
 GET  /rules/check/:fen                     controllers.CheckController.getAll(fen: String)
