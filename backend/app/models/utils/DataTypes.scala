@@ -286,4 +286,6 @@ object DataTypes {
   object GameState {
     def apply(fenString: String): GameState = parseFenString(fenString)
   }
+
+  case class CheckStatus(isInCheck: Boolean, isInCheckmate: Boolean)
 }

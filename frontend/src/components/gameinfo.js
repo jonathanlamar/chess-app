@@ -9,12 +9,43 @@ export default class GameInfo extends React.Component {
     const playerString =
       this.props.whoseTurn === Player.WHITE ? "White" : "Black";
 
-    if (this.props.isAwaitingPawnPromotion) {
+    if (this.props.checkCondition.checkmate) {
+      return (
+        <div>
+          <div>
+            <h3>{playerString + " in checkmate.\t"}</h3>
+          </div>
+          <div>
+            <h3>
+              {"Full move count: " + this.props.fullMoveCount + "\t"}
+              {"Half move clock: " + this.props.halfMoveClock + "\t"}
+            </h3>
+          </div>
+          <div>
+            <CapturedPieces
+              label={"White captured pieces"}
+              pieces={this.props.whiteCapturedPieces}
+            />
+          </div>
+          <div>
+            <CapturedPieces
+              label={"Black captured pieces"}
+              pieces={this.props.blackCapturedPieces}
+            />
+          </div>
+        </div>
+      );
+    } else if (this.props.isAwaitingPawnPromotion) {
       return (
         <div>
           <div>
             <h3>
               {playerString + " to move.\t"}
+              {this.props.checkCondition.check ? "In check" : ""}
+            </h3>
+          </div>
+          <div>
+            <h3>
               {"Full move count: " + this.props.fullMoveCount + "\t"}
               {"Half move clock: " + this.props.halfMoveClock + "\t"}
             </h3>
@@ -45,7 +76,7 @@ export default class GameInfo extends React.Component {
           <div>
             <h3>
               {playerString + " to move.\t"}
-              {this.props.currentPlayerInCheck ? "In check" : ""}
+              {this.props.checkCondition.check ? "In check" : ""}
             </h3>
           </div>
           <div>

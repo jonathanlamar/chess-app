@@ -1,6 +1,6 @@
 package models.rules
 
-import models.rules.ValidMoves.allPossibleMoves
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves}
 import models.utils.DataTypes._
 
 object Check {
@@ -12,6 +12,7 @@ object Check {
         .toList
         .flatten
 
+    // TODO: Maybe this should be getLegalMoves..?  But that causes an infinite loop
     attackingPiecePositions
       .flatMap(pos => allPossibleMoves(gameState.updateWhoseMove(color), pos))
       .distinct
@@ -34,5 +35,21 @@ object Check {
           case Some(pos) => attackSquares.contains(pos)
         }
     }
+  }
+
+  def getCurrentPlayerCheckStatus(gameState: GameState): CheckStatus = {
+    getCheckStatus(gameState, gameState.whoseMove)
+  }
+
+  def getCheckStatus(gameState: GameState, color: Color): CheckStatus = {
+    lazy val allLegalMoves = gameState.piecesIndex
+      .filter({ case (k: Square, v: List[Position]) => k.color == color })
+      .values
+      .toList
+      .flatten
+      .flatMap(pos => getLegalMoves(gameState.updateWhoseMove(color), pos))
+      .distinct
+
+    CheckStatus(isPlayerInCheck(gameState, color), allLegalMoves.isEmpty)
   }
 }

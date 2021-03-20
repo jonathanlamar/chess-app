@@ -31,7 +31,7 @@ export default class App extends LoggyComponent {
     this.isAwaitingPawnPromotion = false;
     this.pawnPromotionLocation = null;
     // For handling check
-    this.currentPlayerInCheck = false;
+    this.checkCondition = { check: false, checkmate: false };
   }
 
   handleStart = async (r, c) => {
@@ -89,10 +89,12 @@ export default class App extends LoggyComponent {
     this.pawnPromotionLocation = null;
 
     const fenString = toFenString(this.gameState);
-    const { data: isInCheck } = await api.getCheckCondition(fenString);
-    this.currentPlayerInCheck = isInCheck;
+    const { data: checkCondition } = await api.getCheckCondition(fenString);
+    this.checkCondition = checkCondition;
 
-    this.triggerAiMove();
+    if (!this.checkCondition.checkmate) {
+      this.triggerAiMove();
+    }
   };
 
   makePlayerMove = async (r, c, newR, newC) => {
@@ -123,7 +125,9 @@ export default class App extends LoggyComponent {
     // Update board
     this.updateGameState(updatedGameState);
 
-    if (!this.isAwaitingPawnPromotion) this.triggerAiMove();
+    if (!this.isAwaitingPawnPromotion && !this.checkCondition.checkmate) {
+      this.triggerAiMove();
+    }
 
     return { r: newR, c: newC };
   };
@@ -136,10 +140,10 @@ export default class App extends LoggyComponent {
     this.whiteCapturedPieces = this.whiteCapturedPieces.concat(
       updatedGameState.whiteCapturedPieces.map(convertApiPieceToNative)
     );
-    const { data: isInCheck } = await api.getCheckCondition(
+    const { data: checkCondition } = await api.getCheckCondition(
       updatedGameState.fen
     );
-    this.currentPlayerInCheck = isInCheck;
+    this.checkCondition = checkCondition;
 
     this.forceUpdate();
   };
@@ -162,7 +166,7 @@ export default class App extends LoggyComponent {
           whiteCapturedPieces={this.whiteCapturedPieces}
           blackCapturedPieces={this.blackCapturedPieces}
           isAwaitingPawnPromotion={this.isAwaitingPawnPromotion}
-          currentPlayerInCheck={this.currentPlayerInCheck}
+          checkCondition={this.checkCondition}
           pawnPromotionColor={
             this.isAwaitingPawnPromotion
               ? getPieceColor(
