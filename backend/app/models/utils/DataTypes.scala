@@ -14,8 +14,6 @@ object DataTypes {
     override def toString(): String = "B"
   }
 
-  case class Player(color: Color)
-
   sealed trait PieceType
 
   final object King extends PieceType {
