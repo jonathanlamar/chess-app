@@ -39,12 +39,16 @@ object TestData {
   def getFenString(): String = {
     val fenBoard = List.fill(8)(getFenRow()).reduce(_ + "/" + _)
     val whoseTurn = if (nextBoolean()) "b" else "w"
-    val castleStatus = List(
-      ('K', nextBoolean()),
-      ('Q', nextBoolean()),
-      ('k', nextBoolean()),
-      ('q', nextBoolean())
-    ).filter(_._2).map(_._1).mkString
+    val castleStatus = {
+      val castlePieces = List(
+        ('K', nextBoolean()),
+        ('Q', nextBoolean()),
+        ('k', nextBoolean()),
+        ('q', nextBoolean())
+      ).filter(_._2).map(_._1)
+
+      if (!castlePieces.isEmpty) castlePieces.mkString else "-"
+    }
     val enPassantTarget = if (nextBoolean()) "-" else getFileRank()
     val halfMoveClock = nextInt(50).toString()
     val fullMoveCount = nextInt(75).toString()
