@@ -1,13 +1,21 @@
-package test
+package test.framework
 
 import models.utils.DataTypes._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers._
 import scala.util.Random.{nextBoolean, nextInt}
 
-/** Generates random instances of datatypes for unit testing.
-  * These are not all uniform, but I don't think they need to be.  Plus, that
-  * would have resulted in more complex code, which I didn't want to write.
-  */
-object TestData {
+abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
+
+  /** Repeats a procedure n times */
+  def repeat[A](n: Int)(procedure: => A): Unit = {
+    if (n > 0) {
+      procedure
+      repeat(n - 1)(procedure)
+    }
+  }
+
+  /* Random data for unit tests */
   def getColor(): Color = if (nextBoolean()) Black else White
 
   def getPieceType(): PieceType = nextElement(List(Pawn, Knight, Bishop, Rook, Queen, King))

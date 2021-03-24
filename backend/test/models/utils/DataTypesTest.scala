@@ -1,12 +1,7 @@
 package models.utils
 
 import models.utils.Fen.{parseFenString, toFenString}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers._
-import test.TestData._
-import test.TestUtils._
-
-abstract class UnitSpec extends AnyFlatSpec with should.Matchers
+import test.framework.UnitSpec
 
 class DataTypesTest extends UnitSpec {
 
