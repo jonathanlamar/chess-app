@@ -1,7 +1,7 @@
 package models.rules
 
 import models.actions.UpdateGameState.updateGameState
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRay}
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
 import models.utils.DataTypes._
 import test.framework.UnitSpec
 
@@ -26,8 +26,7 @@ class ValidMovesTest extends UnitSpec {
       )
 
       for (delta <- deltas) {
-        getRay(gameState, pos, delta, color)
-          .map(pos => gameState.squares(pos.row)(pos.col))
+        getRaySquares(gameState, pos, delta, color)
           .filter({
             case p: Piece => p.color == color
             case _        => false
@@ -54,8 +53,7 @@ class ValidMovesTest extends UnitSpec {
       )
 
       for (delta <- deltas) {
-        val raySquares = getRay(gameState, pos, delta, color)
-          .map(pos => gameState.squares(pos.row)(pos.col))
+        val raySquares = getRaySquares(gameState, pos, delta, color)
 
         if (!raySquares.isEmpty) {
           val nonBlankTail = raySquares.dropWhile(_.isBlank)

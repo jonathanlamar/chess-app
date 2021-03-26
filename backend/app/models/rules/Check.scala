@@ -1,6 +1,6 @@
 package models.rules
 
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves}
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
 import models.utils.DataTypes._
 
 object Check {
@@ -21,19 +21,71 @@ object Check {
     isPlayerInCheck(gameState, gameState.whoseMove)
 
   def isPlayerInCheck(gameState: GameState, color: Color): Boolean = {
-    val attackSquares =
-      if (color == White) getAttackSquares(gameState, Black)
-      else getAttackSquares(gameState, White)
-
-    // TODO: Good use for Try block
-    gameState.piecesIndex.get(Piece(color, King)) match {
-      case None => throw new Exception("No king key in index")
-      case Some(posList) =>
-        posList.headOption match {
-          case None      => throw new Exception("No king value in index")
-          case Some(pos) => attackSquares.contains(pos)
-        }
+    val kingPosition = gameState.piecesIndex(Piece(color, King)).headOption match {
+      case None        => throw new Exception("No King position")
+      case Some(value) => value
     }
+    val opponentColor = if (color == White) Black else White
+
+    val nwRay = getRaySquares(gameState, kingPosition, Position(-1, -1), color)
+    val neRay = getRaySquares(gameState, kingPosition, Position(-1, 1), color)
+    val swRay = getRaySquares(gameState, kingPosition, Position(1, -1), color)
+    val seRay = getRaySquares(gameState, kingPosition, Position(1, 1), color)
+
+    // Pawn:
+    if (color == White && nwRay.length == 1 && nwRay.head == Piece(Black, Pawn)) return true
+    if (color == White && neRay.length == 1 && neRay.head == Piece(Black, Pawn)) return true
+    if (color == Black && swRay.length == 1 && swRay.head == Piece(White, Pawn)) return true
+    if (color == Black && seRay.length == 1 && seRay.head == Piece(White, Pawn)) return true
+
+    // Diagonal sliding pieces:
+    val diagonalSlidingPieces = List(Piece(opponentColor, Bishop), Piece(opponentColor, Queen))
+
+    if (!swRay.isEmpty && diagonalSlidingPieces.contains(swRay.last)) return true
+    if (!seRay.isEmpty && diagonalSlidingPieces.contains(seRay.last)) return true
+    if (!nwRay.isEmpty && diagonalSlidingPieces.contains(nwRay.last)) return true
+    if (!neRay.isEmpty && diagonalSlidingPieces.contains(neRay.last)) return true
+
+    // Straight sliding pieces
+    val wRay = getRaySquares(gameState, kingPosition, Position(-1, 0), color)
+    val nRay = getRaySquares(gameState, kingPosition, Position(0, -1), color)
+    val eRay = getRaySquares(gameState, kingPosition, Position(0, 1), color)
+    val sRay = getRaySquares(gameState, kingPosition, Position(1, 0), color)
+    val straightSlidingPieces = List(Piece(opponentColor, Rook), Piece(opponentColor, Queen))
+
+    if (!wRay.isEmpty && straightSlidingPieces.contains(wRay.last)) return true
+    if (!eRay.isEmpty && straightSlidingPieces.contains(eRay.last)) return true
+    if (!nRay.isEmpty && straightSlidingPieces.contains(nRay.last)) return true
+    if (!sRay.isEmpty && straightSlidingPieces.contains(sRay.last)) return true
+
+    // Knight moves
+    val knightMoveSquares = List(
+      Position(-2, -1),
+      Position(-2, 1),
+      Position(-1, -2),
+      Position(-1, 2),
+      Position(1, -2),
+      Position(1, 2),
+      Position(2, -1),
+      Position(2, 1)
+    )
+      .map(_ + kingPosition)
+      .filter(_.isInBounds)
+      .map(pos => gameState.squares(pos.row)(pos.col))
+
+    if (knightMoveSquares.contains(Piece(opponentColor, Knight))) return true
+
+    // King attacks.
+    if (nwRay.length == 1 && nwRay.head == Piece(opponentColor, King)) return true
+    if (neRay.length == 1 && neRay.head == Piece(opponentColor, King)) return true
+    if (swRay.length == 1 && swRay.head == Piece(opponentColor, King)) return true
+    if (seRay.length == 1 && seRay.head == Piece(opponentColor, King)) return true
+    if (wRay.length == 1 && wRay.head == Piece(opponentColor, King)) return true
+    if (nRay.length == 1 && nRay.head == Piece(opponentColor, King)) return true
+    if (eRay.length == 1 && eRay.head == Piece(opponentColor, King)) return true
+    if (sRay.length == 1 && sRay.head == Piece(opponentColor, King)) return true
+
+    return false
   }
 
   def getCurrentPlayerCheckStatus(gameState: GameState): CheckStatus = {

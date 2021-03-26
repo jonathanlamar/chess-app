@@ -146,19 +146,19 @@ object ValidMoves {
 
   def allPossibleBishopMoves(gameState: GameState, pos: Position, color: Color): List[Position] = {
     List.concat(
-      getRay(gameState, pos, Position(1, 1), color),
-      getRay(gameState, pos, Position(-1, 1), color),
-      getRay(gameState, pos, Position(1, -1), color),
-      getRay(gameState, pos, Position(-1, -1), color)
+      getRayPositions(gameState, pos, Position(1, 1), color),
+      getRayPositions(gameState, pos, Position(-1, 1), color),
+      getRayPositions(gameState, pos, Position(1, -1), color),
+      getRayPositions(gameState, pos, Position(-1, -1), color)
     )
   }
 
   def allPossibleRookMoves(gameState: GameState, pos: Position, color: Color): List[Position] = {
     List.concat(
-      getRay(gameState, pos, Position(-1, 0), color),
-      getRay(gameState, pos, Position(1, 0), color),
-      getRay(gameState, pos, Position(0, -1), color),
-      getRay(gameState, pos, Position(0, 1), color)
+      getRayPositions(gameState, pos, Position(-1, 0), color),
+      getRayPositions(gameState, pos, Position(1, 0), color),
+      getRayPositions(gameState, pos, Position(0, -1), color),
+      getRayPositions(gameState, pos, Position(0, 1), color)
     )
   }
 
@@ -169,16 +169,42 @@ object ValidMoves {
     * @param color - color of piece in position (not checked)
     * @return list of positions of squares in ray
     */
-  def getRay(gameState: GameState, pos: Position, delta: Position, color: Color): List[Position] = {
+  def getRayPositions(
+      gameState: GameState,
+      pos: Position,
+      delta: Position,
+      color: Color
+  ): List[Position] = getRay(gameState, pos, delta, color).map(_._1)
+
+  /** Ray extending from position until out of bounds, or to first opponent piece.
+    * @param gameState - game board to consider
+    * @param pos - position from which ray is computed
+    * @param delta - direction of ray
+    * @param color - color of piece in position (not checked)
+    * @return list of squares in ray
+    */
+  def getRaySquares(
+      gameState: GameState,
+      pos: Position,
+      delta: Position,
+      color: Color
+  ): List[Square] = getRay(gameState, pos, delta, color).map(_._2)
+
+  private def getRay(
+      gameState: GameState,
+      pos: Position,
+      delta: Position,
+      color: Color
+  ): List[(Position, Square)] = {
     val rayPieces = List
       .range(1, 8)
       .map(pos + delta * _)
       .filter(_.isInBounds)
       .map(p => (p, gameState.squares(p.row)(p.col)))
 
-    val blankRaySquares = rayPieces.takeWhile(_._2.isBlank).map(_._1)
+    val blankRaySquares = rayPieces.takeWhile(_._2.isBlank)
     val otherColorSquares =
-      rayPieces.dropWhile(_._2.isBlank).takeWhile(_._2.color != color).map(_._1)
+      rayPieces.dropWhile(_._2.isBlank).takeWhile(_._2.color != color)
 
     otherColorSquares match {
       case Nil       => blankRaySquares
