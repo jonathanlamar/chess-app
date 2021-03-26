@@ -1,6 +1,7 @@
 package models.rules
 
-import models.rules.ValidMoves._
+import models.actions.UpdateGameState.updateGameState
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves}
 import models.utils.DataTypes._
 import test.framework.UnitSpec
 
@@ -78,7 +79,52 @@ class ValidMovesTest extends UnitSpec {
 
   /** E2E valid moves count test (comparing to stockfish) */
   it should "generate the same move counts as stockfish" in {
-    // TODO
+    val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+    val results = (1 to 5).map(i => getNumberOfMoveSequences(i, gameState, true))
+
+    results should contain theSameElementsAs List(44, 1486, 62416, 2104667, 90057802)
+  }
+
+  /* Utility functions */
+
+  private def getNumberOfMoveSequences(depth: Int, gameState: GameState, doPrint: Boolean): Long = {
+    if (depth == 0) return 1
+
+    val moves = getAllLegalMoves(gameState)
+    var numPositions: Long = 0
+
+    for ((startPos, endPos, pieceType) <- moves) {
+      val updatedGameState = updateGameState(gameState, startPos, endPos, pieceType)
+      numPositions += getNumberOfMoveSequences(depth - 1, updatedGameState, false)
+    }
+
+    if (doPrint) println(s"Depth: ${depth} ply\tResult: ${numPositions} positions")
+
+    return numPositions
+  }
+
+  private def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
+    val pieceMoves = gameState.piecesIndex.view
+      .filterKeys(_.color == gameState.whoseMove)
+      .values
+      .flatten
+      .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
+      .toList
+
+    def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
+      gameState.squares(move._1.row)(move._1.col) match {
+        case Blank => throw new Exception("Cannot move blank square")
+        case Piece(color, Pawn) =>
+          if ((color == Black && move._2.row == 7) || (color == White && move._2.row == 0)) {
+            List(Rook, Knight, Bishop, Queen).map((move._1, move._2, _))
+          } else {
+            List((move._1, move._2, null))
+          }
+        case _: Piece => List((move._1, move._2, null))
+      }
+    }
+
+    pieceMoves.flatMap(addPawnPromotion)
   }
 
 }
