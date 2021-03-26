@@ -18,27 +18,9 @@ object RandomAi {
     if (allMoves.isEmpty) gameState
     else {
       val (srcPos, destPos) = allMoves(Random.nextInt(allMoves.length))
-      val updatedGameState = updateGameState(gameState, srcPos, destPos)
-      val srcPiece = gameState.squares(srcPos.row)(srcPos.col)
+      val promotePawnPieceType = List(Knight, Bishop, Rook, Queen)(Random.nextInt(4))
 
-      srcPiece match {
-        case Blank    => throw new Exception("Source piece is blank")
-        case p: Piece => maybeHandlePawnPromotion(updatedGameState, p, destPos)
-      }
+      updateGameState(gameState, srcPos, destPos, promotePawnPieceType)
     }
-  }
-
-  def maybeHandlePawnPromotion(
-      gameState: GameState,
-      srcPiece: Piece,
-      destPos: Position
-  ): GameState = {
-    val promoteType = List(Knight, Rook, Bishop, Queen)(Random.nextInt(4))
-
-    if (srcPiece == Piece(Black, Pawn) && destPos.row == 7) {
-      promotePawn(gameState, destPos, promoteType)
-    } else if (srcPiece == Piece(White, Pawn) && destPos.row == 0) {
-      promotePawn(gameState, destPos, promoteType)
-    } else gameState
   }
 }

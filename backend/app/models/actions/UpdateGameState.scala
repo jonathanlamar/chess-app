@@ -11,7 +11,8 @@ object UpdateGameState {
   def updateGameState(
       gameState: GameState,
       movingPiecePos: Position,
-      destinationPos: Position
+      destinationPos: Position,
+      promotePawnPieceType: PieceType = null
   ): GameState = {
     if (movingPiecePos == destinationPos) return gameState
 
@@ -28,6 +29,7 @@ object UpdateGameState {
           .transform(updateEnPassantTarget(movingPiecePos, p, destinationPos))
           .transform(updateCastleStatus(p, movingPiecePos, destinationPos))
           .transform(updatePiecePosition(movingPiecePos, p, destinationPos))
+          .transform(maybeHandlePawnPromotion(p, destinationPos, promotePawnPieceType))
           .transform(updateWhoseMove)
       }
     }
@@ -173,4 +175,20 @@ object UpdateGameState {
       case White => gameState.updateWhoseMove(Black)
     }
   }
+
+  def maybeHandlePawnPromotion(
+      movingPiece: Piece,
+      destinationPos: Position,
+      promotePawnPieceType: PieceType
+  )(gameState: GameState) = {
+    if (promotePawnPieceType == null || movingPiece.pieceType != Pawn) {
+      gameState
+    } else if (
+      (movingPiece.color == Black && destinationPos.row == 7) ||
+      (movingPiece.color == White && destinationPos.row == 0)
+    ) {
+      promotePawn(gameState, destinationPos, promotePawnPieceType)
+    } else throw new Exception("Unknown pawm promotion condition")
+  }
+
 }

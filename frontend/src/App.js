@@ -80,6 +80,7 @@ export default class App extends LoggyComponent {
     this.updateGameState(updatedGameState);
   };
 
+  // TODO: Rewrite this logic now that the API allows for pawn promotion.
   promotePawn = async (newPiece) => {
     // This will throw an error if pawnPromotionLocation is not set.
     this.gameState.squares[this.pawnPromotionLocation.r][
