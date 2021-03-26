@@ -15,6 +15,15 @@ abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
     }
   }
 
+  def time[R](block: => R): (R, Long) = {
+    val t0 = System.nanoTime()
+    val result = block // call-by-name
+    val t1 = System.nanoTime()
+
+    println("Elapsed time: " + (t1 - t0) + "ns")
+    (result, t1 - t0)
+  }
+
   /* Random data for unit tests */
   def getColor(): Color = if (nextBoolean()) Black else White
 
