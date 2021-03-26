@@ -52,8 +52,6 @@ export default class App extends LoggyComponent {
 
     if (getPieceColor(movingPiece) !== this.gameState.whoseMove) {
       // Can't move other players pieces
-      // return this.makePlayerMove(r, c, r, c);
-      // FIXME: This can't be inside of an async function..?
       this.mobilePieceHomeSquare = "NONE";
       this.validMovesSquares = [];
       this.forceUpdate();
@@ -62,7 +60,6 @@ export default class App extends LoggyComponent {
 
     // No op invalid moves
     if (!this.validMovesSquares.includes(rcToFileRank(newR, newC))) {
-      // return this.makePlayerMove(r, c, r, c);
       this.mobilePieceHomeSquare = "NONE";
       this.validMovesSquares = [];
       this.forceUpdate();

@@ -4,16 +4,12 @@ import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
 import models.utils.DataTypes._
 
-/** Logic for generating all valid moves for a piece.
-  * This includes considerations of blocking pieces and capturing/capturable,
-  * but is only "pseudo-legal" in the sense that no consideration for check is
-  * made.
-  */
+/** Logic for generating all valid moves for a piece. */
 object ValidMoves {
 
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
     allPossibleMoves(gameState, pos).filter(newPos =>
-        !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
+      !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
     )
   }
 
@@ -88,7 +84,6 @@ object ValidMoves {
     }
   }
 
-  // TODO: This may be a bug
   def getPawnCaptureSquares(gameState: GameState, pos: Position, color: Color): List[Position] = {
     doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
       .filter(p =>

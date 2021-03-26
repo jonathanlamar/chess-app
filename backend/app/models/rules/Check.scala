@@ -12,7 +12,6 @@ object Check {
         .toList
         .flatten
 
-    // TODO: Maybe this should be getLegalMoves..?  But that causes an infinite loop
     attackingPiecePositions
       .flatMap(pos => allPossibleMoves(gameState.updateWhoseMove(color), pos))
       .distinct
