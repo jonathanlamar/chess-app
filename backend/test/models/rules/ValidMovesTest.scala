@@ -1,15 +1,81 @@
 package models.rules
 
 import models.actions.UpdateGameState.updateGameState
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves}
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRay}
 import models.utils.DataTypes._
 import test.framework.UnitSpec
 
 class ValidMovesTest extends UnitSpec {
 
-  // TODO: All of the asserts for restriction of legal moves should also have a
-  // corresponding assert about all possible moves.  That way we know the check
-  // logic is really limiting moves.
+  behavior of "Rays"
+
+  it should "not contain any pieces of same color" in {
+    repeat(10) {
+      val gameState = getGameState()
+      val color = getColor()
+      val pos = getPosition()
+      val deltas = List(
+        Position(-1, -1),
+        Position(-1, 0),
+        Position(-1, 1),
+        Position(0, -1),
+        Position(0, 1),
+        Position(1, -1),
+        Position(1, 0),
+        Position(1, 1)
+      )
+
+      for (delta <- deltas) {
+        getRay(gameState, pos, delta, color)
+          .map(pos => gameState.squares(pos.row)(pos.col))
+          .filter({
+            case p: Piece => p.color == color
+            case _        => false
+          }) shouldBe empty
+      }
+    }
+  }
+
+  it should "contain opponent pieces only in last position" in {
+    repeat(10) {
+      val gameState = getGameState()
+      val color = getColor()
+      val opponentColor = if (color == White) Black else White
+      val pos = getPosition()
+      val deltas = List(
+        Position(-1, -1),
+        Position(-1, 0),
+        Position(-1, 1),
+        Position(0, -1),
+        Position(0, 1),
+        Position(1, -1),
+        Position(1, 0),
+        Position(1, 1)
+      )
+
+      for (delta <- deltas) {
+        val raySquares = getRay(gameState, pos, delta, color)
+          .map(pos => gameState.squares(pos.row)(pos.col))
+
+        if (!raySquares.isEmpty) {
+          val nonBlankTail = raySquares.dropWhile(_.isBlank)
+
+          nonBlankTail.length should be <= 1
+
+          List(
+            Blank,
+            Piece(opponentColor, Pawn),
+            Piece(opponentColor, Knight),
+            Piece(opponentColor, Bishop),
+            Piece(opponentColor, Rook),
+            Piece(opponentColor, Queen),
+            Piece(opponentColor, King)
+          ) should contain(raySquares.last)
+        }
+      }
+
+    }
+  }
 
   behavior of "En passant target"
 
@@ -75,15 +141,15 @@ class ValidMovesTest extends UnitSpec {
     getLegalMoves(gameState, Position(3, 1)) shouldNot contain(Position(2, 2))
   }
 
-  behavior of "Valid moves generation"
+  // behavior of "Valid moves generation"
 
-  /** E2E valid moves count test (comparing to stockfish) */
-  it should "generate the same move counts as stockfish" in {
-    val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
-    val results = (1 to 5).map(i => getNumberOfMoveSequences(i, gameState, true))
+  // /** E2E valid moves count test (comparing to stockfish) */
+  // it should "generate the same move counts as stockfish" in {
+  //   val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+  //   val results = (1 to 5).map(i => getNumberOfMoveSequences(i, gameState, true))
 
-    results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
-  }
+  //   results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
+  // }
 
   /* Utility functions */
 

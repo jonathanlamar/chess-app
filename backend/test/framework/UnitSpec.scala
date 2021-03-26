@@ -103,7 +103,7 @@ abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
       nextElement(List("1", "2", "3", "4", "5", "6", "7", "8"))
   }
 
-  private def nextElement[A](ls: List[A]): A = ls match {
+  protected def nextElement[A](ls: List[A]): A = ls match {
     case Nil => throw new Exception("Cannot return element of empty list")
     case _   => ls(nextInt(ls.length))
   }

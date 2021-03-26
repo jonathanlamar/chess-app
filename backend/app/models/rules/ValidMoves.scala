@@ -3,14 +3,29 @@ package models.rules
 import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
 import models.utils.DataTypes._
+import scala.math.abs
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
 
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
-    allPossibleMoves(gameState, pos).filter(newPos =>
-      !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
-    )
+    val maybeLegalMoves = allPossibleMoves(gameState, pos)
+      .filter(newPos =>
+        !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
+      )
+
+    if (isCurrentPlayerInCheck(gameState))
+      maybeLegalMoves.filter(newPos => !isCastleMove(gameState, pos, newPos))
+    else maybeLegalMoves
+  }
+
+  def isCastleMove(gameState: GameState, pos: Position, newPos: Position): Boolean = {
+    if (
+      gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, King) &&
+      pos.row == newPos.row &&
+      abs(pos.col - newPos.col) == 2
+    ) true
+    else false
   }
 
   def allPossibleMoves(gameState: GameState, pos: Position): List[Position] = {
@@ -147,8 +162,16 @@ object ValidMoves {
     )
   }
 
+  /** Ray extending from position until out of bounds, or to first opponent piece.
+    * @param gameState - game board to consider
+    * @param pos - position from which ray is computed
+    * @param delta - direction of ray
+    * @param color - color of piece in position (not checked)
+    * @return list of positions of squares in ray
+    */
   def getRay(gameState: GameState, pos: Position, delta: Position, color: Color): List[Position] = {
-    val rayPieces = (1 until 8).toList
+    val rayPieces = List
+      .range(1, 8)
       .map(pos + delta * _)
       .filter(_.isInBounds)
       .map(p => (p, gameState.squares(p.row)(p.col)))
