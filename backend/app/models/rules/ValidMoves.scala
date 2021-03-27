@@ -8,6 +8,10 @@ import scala.math.abs
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
 
+  // TODO: This is a major bottlenect for optimization.  Instead of chcking for check, we should
+  // filter out moves that expose attacks by sliding pieces, since that is the only situation in
+  // which a move will expose a player's king to check.  We would then have to condition on whether
+  // the player is already in check to further filter the list of legal moves.
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
     val maybeLegalMoves = allPossibleMoves(gameState, pos)
       .filter(newPos =>
@@ -17,6 +21,77 @@ object ValidMoves {
     if (isCurrentPlayerInCheck(gameState))
       maybeLegalMoves.filter(newPos => !isCastleMove(gameState, pos, newPos))
     else maybeLegalMoves
+  }
+
+  def getLegalMoves2(gameState: GameState, pos: Position): List[Position] = {
+
+    val kingPos = gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
+      case None => throw new Exception("No king on board.")
+      case Some(value) =>
+        value match {
+          case Nil       => throw new Exception("Empty king position list")
+          case head :: _ => head
+        }
+    }
+
+    val pseudoLegalMoves = allPossibleMoves(gameState, pos)
+
+    val opponentColor = if (gameState.whoseMove == White) Black else White
+
+    // Potentially weird: cannot castle self into check
+
+    // get enemy piece sliding attack rays
+    val opponentSlidingPieces = gameState.piecesIndex
+      .filterKeys({
+        case Piece(opponentColor, Bishop) => true
+        case Piece(opponentColor, Rook)   => true
+        case Piece(opponentColor, Queen)  => true
+        case _                            => false
+      })
+      .toList
+      .map({ case (t, ps) => ps.map((t, _)) })
+      .flatten
+
+
+    for ((piece, opponentPosition) <- opponentSlidingPieces) {
+      val diff = kingPos - opponentPosition
+
+      if (abs(diff.row) == abs(diff.col)) {
+        val delta = diff * (1/abs(diff.row))
+
+        getRayPositions(gameState, opponentPosition, delta, opponentColor) match {
+          case Nil => throw new Exception("Empty ray should be impossible")
+          case ray => if (ray.last == pos)
+        }
+      }
+
+      val deltas = piece.pieceType match {
+        case Bishop => List(Position(-1, -1), Position(-1, 1), Position(1, -1), Position(1, 1))
+        case Rook   => List(Position(-1, 0), Position(1, 0), Position(0, -1), Position(0, 1))
+        case Queen =>
+          List(
+            Position(-1, -1),
+            Position(-1, 1),
+            Position(1, -1),
+            Position(1, 1),
+            Position(-1, 0),
+            Position(1, 0),
+            Position(0, -1),
+            Position(0, 1)
+          )
+        case _ => throw new Exception("Not a sliding piece")
+      }
+
+      for (delta <- deltas) {
+
+      }
+    }
+
+    // is position contained in one or more of those rays.
+
+    // If so, compute pseudolegal moves.  For each, filter out
+
+    getLegalMoves(gameState, pos)
   }
 
   def isCastleMove(gameState: GameState, pos: Position, newPos: Position): Boolean = {

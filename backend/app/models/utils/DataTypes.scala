@@ -93,6 +93,7 @@ object DataTypes {
 
     // For computing valid squares
     def +(other: Position): Position = Position(row + other.row, col + other.col)
+    def +(other: Position): Position = Position(row - other.row, col - other.col)
     def *(other: Int): Position = Position(row * other, col * other)
     def isInBounds: Boolean = row >= 0 && row < 8 && col >= 0 && col < 8
     def verticalFlip: Position = Position(-row, col)
