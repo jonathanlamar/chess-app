@@ -188,7 +188,12 @@ object UpdateGameState {
       (movingPiece.color == White && destinationPos.row == 0)
     ) {
       promotePawn(gameState, destinationPos, promotePawnPieceType)
-    } else throw new Exception("Unknown pawm promotion condition")
+    } else if (movingPiece.pieceType == Pawn) {
+      gameState
+    } else {
+      println(movingPiece, destinationPos, promotePawnPieceType)
+      throw new Exception("Unknown pawm promotion condition")
+    }
   }
 
 }
