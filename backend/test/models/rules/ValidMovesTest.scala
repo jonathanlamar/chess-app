@@ -139,6 +139,30 @@ class ValidMovesTest extends UnitSpec {
     getLegalMoves(gameState, Position(3, 1)) shouldNot contain(Position(2, 2))
   }
 
+  behavior of "Castling"
+
+  it should "be possible if there are no obstructions" in {
+    val gameState = GameState("8/8/8/8/8/8/8/R3K2R w KQ - 0 1")
+
+    getLegalMoves(gameState, Position(7, 4)) should contain allOf (Position(7, 2), Position(7, 6))
+  }
+
+  it should "not be possible if pieces are in the way" in {
+    val gameState1 = GameState("8/8/8/8/8/8/8/R3K1NR w KQ - 0 1")
+    val gameState2 = GameState("8/8/8/8/8/8/8/R1B1K2R w KQ - 0 1")
+
+    getLegalMoves(gameState1, Position(7, 4)) should contain(Position(7, 2))
+    getLegalMoves(gameState1, Position(7, 4)) shouldNot contain(Position(7, 6))
+    getLegalMoves(gameState2, Position(7, 4)) shouldNot contain(Position(7, 2))
+    getLegalMoves(gameState2, Position(7, 4)) should contain(Position(7, 6))
+  }
+
+  it should "not be possible if the king is in check" in {
+    val gameState = GameState("4r4/8/8/8/8/8/8/R3K2R w KQ - 0 1")
+
+    getLegalMoves(gameState, Position(7, 4)) should contain noneOf (Position(7, 2), Position(7, 6))
+  }
+
   // behavior of "Valid moves generation"
 
   // /** E2E valid moves count test (comparing to stockfish) */
