@@ -13,14 +13,10 @@ object ValidMoves {
   // which a move will expose a player's king to check.  We would then have to condition on whether
   // the player is already in check to further filter the list of legal moves.
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
-    val maybeLegalMoves = allPossibleMoves(gameState, pos)
+    allPossibleMoves(gameState, pos)
       .filter(newPos =>
         !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
       )
-
-    if (isCurrentPlayerInCheck(gameState))
-      maybeLegalMoves.filter(newPos => !isCastleMove(gameState, pos, newPos))
-    else maybeLegalMoves
   }
 
   def getLegalMoves2(gameState: GameState, pos: Position): List[Position] = {
@@ -130,9 +126,14 @@ object ValidMoves {
       Position(1, -1),
       Position(1, 0),
       Position(1, 1)
-    ) ::: getCastlePositions(gameState, color)
+    )
 
-    doBasicFilters(pos, color, deltas)
+    val allMoveDeltas =
+      if (!isCurrentPlayerInCheck(gameState))
+        deltas ::: getCastlePositions(gameState, color)
+      else deltas
+
+    doBasicFilters(pos, color, allMoveDeltas)
       .filter(p =>
         gameState.squares(p.row)(p.col).isBlank || gameState.squares(p.row)(p.col).color != color
       )
