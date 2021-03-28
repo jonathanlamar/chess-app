@@ -128,7 +128,6 @@ class ValidMovesTest extends UnitSpec {
     getLegalMoves(gameState, Position(6, 4)) shouldBe empty
   }
 
-  /** Cannot en passant if it puts self in check. */
   it should "not be possible for player to en passant if it puts self in check" in {
     val gameState = GameState("8/8/8/KPp4r/8/8/8/8 w - c6 0 1")
 
