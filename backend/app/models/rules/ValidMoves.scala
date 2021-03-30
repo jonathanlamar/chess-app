@@ -1,93 +1,134 @@
 package models.rules
 
 import models.actions.UpdateGameState.updateGameState
-import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
+import models.rules.Check.{getAttackSquares, isPlayerInCheck, isCurrentPlayerInCheck}
 import models.utils.DataTypes._
-import scala.math.abs
+import scala.math.{abs, sqrt, max}
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
 
-  // TODO: This is a major bottlenect for optimization.  Instead of chcking for check, we should
-  // filter out moves that expose attacks by sliding pieces, since that is the only situation in
-  // which a move will expose a player's king to check.  We would then have to condition on whether
-  // the player is already in check to further filter the list of legal moves.
+  // FIXME: Does not properly filter out en passant or limit moves
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
-    allPossibleMoves(gameState, pos)
-      .filter(newPos =>
-        !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
-      )
-  }
-
-  def getLegalMoves2(gameState: GameState, pos: Position): List[Position] = {
-
     val kingPos = gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
-      case None => throw new Exception("No king on board.")
       case Some(value) =>
         value match {
-          case Nil       => throw new Exception("Empty king position list")
           case head :: _ => head
+          case Nil       => throw new Exception("Empty king position list")
         }
+      case None => throw new Exception("No king on board.")
     }
-
+    val opponentColor = if (gameState.whoseMove == White) Black else White
     val pseudoLegalMoves = allPossibleMoves(gameState, pos)
 
-    val opponentColor = if (gameState.whoseMove == White) Black else White
+    if (pos == kingPos) {
+      return pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
 
-    // Potentially weird: cannot castle self into check
+    } else if (isCurrentPlayerInCheck(gameState)) {
+      pseudoLegalMoves // TODO limit moves.
+    } else {
+      val oppSlidingPieces = gameState.piecesIndex.view
+        .filterKeys({
+          case Piece(opponentColor, Bishop) => true
+          case Piece(opponentColor, Rook)   => true
+          case Piece(opponentColor, Queen)  => true
+          case _                            => false
+        })
+        .toList
+        .map({ case (p, poss) => poss.map((p.pieceType, _)) })
+        .flatten
 
-    // get enemy piece sliding attack rays
-    val opponentSlidingPieces = gameState.piecesIndex
-      .filterKeys({
-        case Piece(opponentColor, Bishop) => true
-        case Piece(opponentColor, Rook)   => true
-        case Piece(opponentColor, Queen)  => true
-        case _                            => false
-      })
-      .toList
-      .map({ case (t, ps) => ps.map((t, _)) })
-      .flatten
+      for ((pieceType, oppPos) <- oppSlidingPieces) {
+        getDelta(oppPos, kingPos) match {
+          case Some(delta) => {
+            val fullRay = getRayToKing(gameState, oppPos, delta)
 
-
-    for ((piece, opponentPosition) <- opponentSlidingPieces) {
-      val diff = kingPos - opponentPosition
-
-      if (abs(diff.row) == abs(diff.col)) {
-        val delta = diff * (1/abs(diff.row))
-
-        getRayPositions(gameState, opponentPosition, delta, opponentColor) match {
-          case Nil => throw new Exception("Empty ray should be impossible")
-          case ray => if (ray.last == pos)
+            if (posIsBlocking(gameState, pos, fullRay)) {
+              return pseudoLegalMoves.intersect(fullRay.map(_._1))
+            } else if (
+              gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, Pawn) &&
+              pseudoLegalMoves.contains(gameState.enPassantTarget) &&
+              enPassantBlocking(gameState, pos, fullRay)
+            ) {
+              return pseudoLegalMoves.filter(_ != gameState.enPassantTarget)
+            }
+          }
+          case None => () // do nothing
         }
       }
 
-      val deltas = piece.pieceType match {
-        case Bishop => List(Position(-1, -1), Position(-1, 1), Position(1, -1), Position(1, 1))
-        case Rook   => List(Position(-1, 0), Position(1, 0), Position(0, -1), Position(0, 1))
-        case Queen =>
-          List(
-            Position(-1, -1),
-            Position(-1, 1),
-            Position(1, -1),
-            Position(1, 1),
-            Position(-1, 0),
-            Position(1, 0),
-            Position(0, -1),
-            Position(0, 1)
-          )
-        case _ => throw new Exception("Not a sliding piece")
-      }
-
-      for (delta <- deltas) {
-
-      }
+      pseudoLegalMoves
     }
+  }
 
-    // is position contained in one or more of those rays.
+  def getEnPassantPiecePos(gameState: GameState): Position = {
+    val delta = if (gameState.whoseMove == White) Position(1, 0) else Position(-1, 0)
 
-    // If so, compute pseudolegal moves.  For each, filter out
+    gameState.enPassantTarget + delta
+  }
 
-    getLegalMoves(gameState, pos)
+  def getDelta(fromPos: Position, toPos: Position): Option[Position] = {
+    val diff = toPos - fromPos
+    val m = max(abs(diff.row), abs(diff.col)).toDouble
+    if ((diff.row / m).isWhole && (diff.col / m).isWhole)
+      Some(Position((diff.row / m).toInt, (diff.col / m).toInt))
+    else None
+  }
+
+  // TODO - refactor to positionsBlockCapture(gs, positions: List[Position], rayToKing): Boolean
+  def posIsBlocking(
+      gameState: GameState,
+      pos: Position,
+      rayToKing: List[(Position, Square)]
+  ): Boolean = {
+    val squares = rayToKing.map(_._2)
+    val positions = rayToKing.map(_._1)
+    val otherSquares = rayToKing.drop(1).dropRight(1).filter(_._1 != pos).map(_._2)
+
+    positions.contains(pos) &&
+    squares.last == Piece(gameState.whoseMove, King) &&
+    otherSquares.filter(!_.isBlank).isEmpty
+  }
+
+  def enPassantBlocking(
+      gameState: GameState,
+      pawnPos: Position,
+      rayToKing: List[(Position, Square)]
+  ): Boolean = {
+    val enPassantPiecePos = getEnPassantPiecePos(gameState)
+    val squares = rayToKing.map(_._2)
+    val positions = rayToKing.map(_._1)
+    val otherSquares = rayToKing
+      .drop(1)
+      .dropRight(1)
+      .filter({ case (p, _) => p != enPassantPiecePos && p != pawnPos })
+      .map(_._2)
+
+    positions.contains(enPassantPiecePos) &&
+    squares.last == Piece(gameState.whoseMove, King) &&
+    otherSquares.filter(!_.isBlank).isEmpty
+  }
+
+  def getRayToKing(
+      gameState: GameState,
+      pos: Position,
+      delta: Position
+  ): List[(Position, Square)] = {
+    val rayPieces = List
+      .range(0, 8)
+      .map(pos + delta * _)
+      .filter(_.isInBounds)
+      .map(p => (p, gameState.squares(p.row)(p.col)))
+
+    val nonKingSquares = rayPieces.takeWhile(_._2 != Piece(gameState.whoseMove, King))
+    val kingSquares = rayPieces
+      .dropWhile(_._2 != Piece(gameState.whoseMove, King))
+      .takeWhile(_._2 == Piece(gameState.whoseMove, King))
+
+    kingSquares match {
+      case Nil       => nonKingSquares
+      case head :: _ => nonKingSquares :+ head
+    }
   }
 
   def isCastleMove(gameState: GameState, pos: Position, newPos: Position): Boolean = {
