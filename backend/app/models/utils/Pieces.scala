@@ -27,8 +27,8 @@ object Pieces {
 
     maybeDelta.flatMap(delta =>
       if (
-        (slidingPieceType == Rook && isDiagonal(delta)) ||
-        (slidingPieceType == Bishop && isStraight(delta)) ||
+        (slidingPieceType == Rook && isStraight(delta)) ||
+        (slidingPieceType == Bishop && isDiagonal(delta)) ||
         slidingPieceType == Queen
       ) Some(delta)
       else None
