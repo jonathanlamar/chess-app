@@ -27,12 +27,15 @@ abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
   /* Random data for unit tests */
   def getColor(): Color = if (nextBoolean()) Black else White
 
-  def getPieceType(): PieceType = nextElement(List(Pawn, Knight, Bishop, Rook, Queen, King))
+  def getPieceType(skipKing: Boolean = false): PieceType = if (skipKing)
+    nextElement(List(Pawn, Knight, Bishop, Rook, Queen))
+  else nextElement(List(Pawn, Knight, Bishop, Rook, Queen, King))
 
   /** 50% chance of being blank.  Otherwise uniformly random Piece */
-  def getSquare(): Square = if (nextBoolean()) Blank else getPiece()
+  def getSquare(skipKing: Boolean = false): Square =
+    if (nextBoolean()) Blank else getPiece(skipKing)
 
-  def getPiece(): Piece = Piece(getColor(), getPieceType())
+  def getPiece(skipKing: Boolean = false): Piece = Piece(getColor(), getPieceType(skipKing))
 
   def getPosition(): Position = Position(nextInt(8), nextInt(8))
 
@@ -43,8 +46,8 @@ abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
     whiteQueen = nextBoolean()
   )
 
-  def getGameState(): GameState = GameState(
-    squares = List.fill(8, 8)(getSquare()),
+  def getGameState(skipKings: Boolean = false): GameState = GameState(
+    squares = List.fill(8, 8)(getSquare(skipKing = skipKings)),
     whoseMove = getColor(),
     castleStatus = getCastleStatus(),
     enPassantTarget = getPosition(),

@@ -35,16 +35,50 @@ object Pieces {
     )
   }
 
+  def getAttackingPieces(gameState: GameState, attackColor: Color): List[(PieceType, Position)] = {
+    val kingColor = if (attackColor == White) Black else White
+    val kingPos = getKingPosition(gameState, kingColor) match {
+      case None        => throw new Exception("No king to attack")
+      case Some(value) => value
+    }
+
+    val pawns = getPawnPositions(gameState, attackColor)
+      .map(p => (p, allPossiblePawnMoves(gameState, p, attackColor)))
+      .filter({ case (p, poss) => poss.contains(kingPos) })
+      .map { case (p, _) => (Pawn, p) }
+
+    val knights = getKnightPositions(gameState, attackColor)
+      .map(p => (p, allPossibleKnightMoves(gameState, p, attackColor)))
+      .filter({ case (p, poss) => poss.contains(kingPos) })
+      .map { case (p, _) => (Knight, p) }
+
+    val kings = getKingPosition(gameState, attackColor).toList
+      .map({ p =>
+        (p, allPossibleKingMoves(gameState, p, attackColor))
+      })
+      .filter({ case (p, poss) => poss.contains(kingPos) })
+      .map({ case (p, _) => (King, p) })
+
+    val slidingPieces = getSlidingPieces(gameState, attackColor)
+      .flatMap({ case (pieceType, oppPos) =>
+        getOptionalDelta(oppPos, kingPos, pieceType).map((pieceType, oppPos, _))
+      })
+      .filter({ case (_, oppPos, delta) =>
+        getRayPositions(gameState, oppPos, delta, attackColor).contains(kingPos)
+      })
+      .map({ case (pieceType, oppPos, _) => (pieceType, oppPos) })
+
+    pawns ::: knights ::: kings ::: slidingPieces
+  }
+
   def getPawnPositions(gameState: GameState, color: Color): List[Position] =
     getPositionsOfType(gameState, color, Pawn)
 
-  def getSlidingPieces(gameState: GameState, color: Color): List[(PieceType, Position)] = {
+  def getSlidingPieces(gameState: GameState, pieceColor: Color): List[(PieceType, Position)] = {
     val slidingPieces = gameState.piecesIndex.view
       .filterKeys({
-        case Piece(color, Bishop) => true
-        case Piece(color, Rook)   => true
-        case Piece(color, Queen)  => true
-        case _                    => false
+        case Piece(c, t) => c == pieceColor && List(Bishop, Rook, Queen).contains(t)
+        case _           => false
       })
       .toList
       .flatMap({ case (p, poss) => poss.map((p.pieceType, _)) })

@@ -1,8 +1,10 @@
 package models.rules
 
 import models.actions.UpdateGameState.updateGameState
+import models.rules.Check.isCurrentPlayerInCheck
 import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
 import models.utils.DataTypes._
+import models.utils.Pieces._
 import test.framework.UnitSpec
 
 class ValidMovesTest extends UnitSpec {
@@ -94,6 +96,33 @@ class ValidMovesTest extends UnitSpec {
   }
 
   behavior of "Check"
+
+  // Still worth hard-coding check since it is faster.
+  it should "be equivalent to getAttackingPieces != Nil" in {
+    repeat(1000) {
+      val whiteKingPosition = getPosition()
+      var blackKingPosition = getPosition()
+      // make sure these are different
+      while (blackKingPosition == whiteKingPosition) {
+        blackKingPosition = getPosition()
+      }
+
+      // Make sure game only has one king of each type
+      val gameState = getGameState(skipKings = true)
+        .updateSquare(whiteKingPosition, Piece(White, King))
+        .updateSquare(blackKingPosition, Piece(Black, King))
+        .updateEnPassantTarget(null)
+        .updateCastleStatus(Piece(White, King), false)
+        .updateCastleStatus(Piece(White, Queen), false)
+        .updateCastleStatus(Piece(Black, King), false)
+        .updateCastleStatus(Piece(Black, Queen), false)
+      val oppColor = if (gameState.whoseMove == White) Black else White
+
+      !getAttackingPieces(gameState, oppColor).isEmpty should equal(
+        isCurrentPlayerInCheck(gameState)
+      )
+    }
+  }
 
   it should "disable other moves" in {
     val gameState = GameState("8/8/8/8/8/8/P7/4K2r w - - 0 1")
