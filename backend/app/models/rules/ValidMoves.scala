@@ -3,7 +3,8 @@ package models.rules
 import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.{getAttackSquares, isPlayerInCheck, isCurrentPlayerInCheck}
 import models.utils.DataTypes._
-import scala.math.{abs, sqrt, max}
+import models.utils.Pieces.{getEnPassantPiecePos, getOptionalDelta, getSlidingPieces}
+import scala.math.abs
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
@@ -21,73 +22,36 @@ object ValidMoves {
     val opponentColor = if (gameState.whoseMove == White) Black else White
     val pseudoLegalMoves = allPossibleMoves(gameState, pos)
 
-    if (pos == kingPos) {
-      pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
-    } else if (isCurrentPlayerInCheck(gameState)) {
-      pseudoLegalMoves // TODO limit moves.
-    } else {
-      val oppSlidingPieces = gameState.piecesIndex.view
-        .filterKeys({
-          case Piece(opponentColor, Bishop) => true
-          case Piece(opponentColor, Rook)   => true
-          case Piece(opponentColor, Queen)  => true
-          case _                            => false
-        })
-        .toList
-        .map({ case (p, poss) => poss.map((p.pieceType, _)) })
-        .flatten
+    if (pos == kingPos) return pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
 
-      for ((pieceType, oppPos) <- oppSlidingPieces) {
-        getDelta(oppPos, kingPos, pieceType) match {
-          case Some(delta) => {
-            val fullRay = getRayToKing(gameState, oppPos, delta)
-
-            if (posIsBlocking(gameState, pos, fullRay)) {
-              return pseudoLegalMoves.intersect(fullRay.map(_._1))
-            } else if (
-              gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, Pawn) &&
-              pseudoLegalMoves.contains(gameState.enPassantTarget) &&
-              enPassantBlocking(gameState, pos, fullRay)
-            ) {
-              return pseudoLegalMoves.filter(_ != gameState.enPassantTarget)
-            }
-          }
-          case None => () // do nothing
-        }
-      }
-
-      pseudoLegalMoves
+    if (isCurrentPlayerInCheck(gameState)) {
+      // TODO: If one attack, block or capture.  If two, no valid move
+      return pseudoLegalMoves
     }
+
+    // Look for sliding piece attacks blocked by pos.
+    getSlidingPieces(gameState, opponentColor)
+      .flatMap({ case (pieceType, oppPos) =>
+        getOptionalDelta(oppPos, kingPos, pieceType).map((oppPos, _))
+      })
+      .foreach({
+        case (oppPos, delta) => {
+          val rayToKing = getRayToKing(gameState, oppPos, delta)
+
+          if (posIsBlocking(gameState, pos, rayToKing)) {
+            return pseudoLegalMoves.intersect(rayToKing.map(_._1))
+          } else if (
+            gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, Pawn) &&
+            pseudoLegalMoves.contains(gameState.enPassantTarget) &&
+            enPassantBlocking(gameState, pos, rayToKing)
+          ) {
+            return pseudoLegalMoves.filter(_ != gameState.enPassantTarget)
+          }
+        }
+      })
+
+    return pseudoLegalMoves
   }
-
-  def getEnPassantPiecePos(gameState: GameState): Position = {
-    val delta = if (gameState.whoseMove == White) Position(1, 0) else Position(-1, 0)
-
-    gameState.enPassantTarget + delta
-  }
-
-  def getDelta(fromPos: Position, toPos: Position, movingPieceType: PieceType): Option[Position] = {
-    val diff = toPos - fromPos
-    val m = max(abs(diff.row), abs(diff.col)).toDouble
-    val maybeDelta =
-      if ((diff.row / m).isWhole && (diff.col / m).isWhole)
-        Some(Position((diff.row / m).toInt, (diff.col / m).toInt))
-      else None
-
-    maybeDelta.flatMap(delta =>
-      if (
-        (movingPieceType == Rook && isDiagonal(delta)) ||
-        (movingPieceType == Bishop && isStraight(delta)) ||
-        movingPieceType == Queen
-      ) Some(delta)
-      else None
-    )
-  }
-
-  def isDiagonal(delta: Position): Boolean = abs(delta.row) == 1 && abs(delta.col) == 1
-
-  def isStraight(delta: Position): Boolean =
-    (abs(delta.row) == 1 && delta.col == 0) || (delta.row == 0 && abs(delta.col) == 1)
 
   // TODO - refactor to positionsBlockCapture(gs, positions: List[Position], rayToKing): Boolean
   def posIsBlocking(
