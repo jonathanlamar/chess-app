@@ -1,6 +1,6 @@
 package models.rules
 
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
+import models.rules.ValidMoves._
 import models.utils.DataTypes._
 
 object Check {
@@ -103,4 +103,81 @@ object Check {
 
     CheckStatus(isPlayerInCheck(gameState, color), allLegalMoves.isEmpty)
   }
+
+  /** Helper functions */
+  def getPiecesAttackingKing(
+      gameState: GameState,
+      kingColor: Color
+  ): List[(PieceType, Position)] = {
+    val oppoColor = if (kingColor == White) Black else White
+    val kingPosition = getKingPosition(gameState, kingColor) match {
+      case None        => throw new Exception("No king for check")
+      case Some(value) => value
+    }
+
+    val attackingPawns = getPawnPositions(gameState, oppoColor)
+      .filter(p => allPossiblePawnMoves(gameState, p, oppoColor).contains(kingPosition))
+      .map((Pawn, _))
+
+    val attackingKnights = getKnightPositions(gameState, oppoColor)
+      .filter(p => allPossibleKnightMoves(gameState, p, oppoColor).contains(kingPosition))
+      .map((Knight, _))
+
+    val attackingSlidingPieces = getSlidingPieces(gameState, oppoColor)
+      .filter({
+        case (t, p) => {
+          getDelta(p, kingPosition, t) match {
+            case None        => false
+            case Some(delta) => getRayPositions(gameState, p, delta, oppoColor).last == kingPosition
+          }
+        }
+      })
+
+    val attackingKing = getKingPosition(gameState, oppoColor)
+      .flatMap(p =>
+        if (allPossibleKingMoves(gameState, p, oppoColor).contains(kingPosition)) Some((King, p))
+        else None
+      )
+      .toList
+
+    attackingPawns ::: attackingKnights ::: attackingSlidingPieces ::: attackingKing
+  }
+
+  private def getPositionsOfType(
+      gameState: GameState,
+      color: Color,
+      pieceType: PieceType
+  ): List[Position] = {
+    gameState.piecesIndex.view
+      .filterKeys(_ == Piece(color, pieceType))
+      .values
+      .toList
+      .flatten
+  }
+
+  def getPawnPositions(gameState: GameState, color: Color): List[Position] =
+    getPositionsOfType(gameState, color, Pawn)
+
+  def getSlidingPieces(gameState: GameState, color: Color): List[(PieceType, Position)] = {
+    val slidingPieces = gameState.piecesIndex.view
+      .filterKeys({
+        case Piece(color, Bishop) => true
+        case Piece(color, Rook)   => true
+        case Piece(color, Queen)  => true
+        case _                    => false
+      })
+      .toList
+      .flatMap({ case (p, poss) => poss.map((p.pieceType, _)) })
+
+    slidingPieces
+  }
+
+  def getKnightPositions(gameState: GameState, color: Color): List[Position] =
+    getPositionsOfType(gameState, color, Knight)
+
+  def getQueenPosition(gameState: GameState, color: Color): Option[Position] =
+    getPositionsOfType(gameState, color, Queen).headOption
+
+  def getKingPosition(gameState: GameState, color: Color): Option[Position] =
+    getPositionsOfType(gameState, color, King).headOption
 }

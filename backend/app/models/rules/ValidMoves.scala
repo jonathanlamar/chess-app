@@ -22,8 +22,7 @@ object ValidMoves {
     val pseudoLegalMoves = allPossibleMoves(gameState, pos)
 
     if (pos == kingPos) {
-      return pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
-
+      pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
     } else if (isCurrentPlayerInCheck(gameState)) {
       pseudoLegalMoves // TODO limit moves.
     } else {
@@ -39,7 +38,7 @@ object ValidMoves {
         .flatten
 
       for ((pieceType, oppPos) <- oppSlidingPieces) {
-        getDelta(oppPos, kingPos) match {
+        getDelta(oppPos, kingPos, pieceType) match {
           case Some(delta) => {
             val fullRay = getRayToKing(gameState, oppPos, delta)
 
@@ -67,13 +66,28 @@ object ValidMoves {
     gameState.enPassantTarget + delta
   }
 
-  def getDelta(fromPos: Position, toPos: Position): Option[Position] = {
+  def getDelta(fromPos: Position, toPos: Position, movingPieceType: PieceType): Option[Position] = {
     val diff = toPos - fromPos
     val m = max(abs(diff.row), abs(diff.col)).toDouble
-    if ((diff.row / m).isWhole && (diff.col / m).isWhole)
-      Some(Position((diff.row / m).toInt, (diff.col / m).toInt))
-    else None
+    val maybeDelta =
+      if ((diff.row / m).isWhole && (diff.col / m).isWhole)
+        Some(Position((diff.row / m).toInt, (diff.col / m).toInt))
+      else None
+
+    maybeDelta.flatMap(delta =>
+      if (
+        (movingPieceType == Rook && isDiagonal(delta)) ||
+        (movingPieceType == Bishop && isStraight(delta)) ||
+        movingPieceType == Queen
+      ) Some(delta)
+      else None
+    )
   }
+
+  def isDiagonal(delta: Position): Boolean = abs(delta.row) == 1 && abs(delta.col) == 1
+
+  def isStraight(delta: Position): Boolean =
+    (abs(delta.row) == 1 && delta.col == 0) || (delta.row == 0 && abs(delta.col) == 1)
 
   // TODO - refactor to positionsBlockCapture(gs, positions: List[Position], rayToKing): Boolean
   def posIsBlocking(
