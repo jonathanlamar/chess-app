@@ -2,9 +2,10 @@ package models.rules
 
 import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.isCurrentPlayerInCheck
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getLegalMoves_OLD, getRaySquares}
 import models.utils.DataTypes._
 import models.utils.Pieces._
+import scala.collection.parallel.ParSeq
 import test.framework.UnitSpec
 
 class ValidMovesTest extends UnitSpec {
@@ -100,22 +101,7 @@ class ValidMovesTest extends UnitSpec {
   // Still worth hard-coding check since it is faster.
   it should "be equivalent to getAttackingPieces != Nil" in {
     repeat(1000) {
-      val whiteKingPosition = getPosition()
-      var blackKingPosition = getPosition()
-      // make sure these are different
-      while (blackKingPosition == whiteKingPosition) {
-        blackKingPosition = getPosition()
-      }
-
-      // Make sure game only has one king of each type
-      val gameState = getGameState(skipKings = true)
-        .updateSquare(whiteKingPosition, Piece(White, King))
-        .updateSquare(blackKingPosition, Piece(Black, King))
-        .updateEnPassantTarget(null)
-        .updateCastleStatus(Piece(White, King), false)
-        .updateCastleStatus(Piece(White, Queen), false)
-        .updateCastleStatus(Piece(Black, King), false)
-        .updateCastleStatus(Piece(Black, Queen), false)
+      val gameState = getRealisticGameState()
       val oppColor = if (gameState.whoseMove == White) Black else White
 
       !getAttackingPieces(gameState, oppColor).isEmpty should equal(
@@ -191,40 +177,52 @@ class ValidMovesTest extends UnitSpec {
     getLegalMoves(gameState, Position(7, 4)) should contain noneOf (Position(7, 2), Position(7, 6))
   }
 
-  // behavior of "Valid moves generation"
+  behavior of "Valid moves generation"
 
-  // /** E2E valid moves count test (comparing to stockfish) */
-  // it should "generate the same move counts as stockfish" in {
-  //   val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
-  //   val results = (1 to 5).map(i => getNumberOfMoveSequences(i, gameState, true))
+  /** E2E valid moves count test (comparing to stockfish) */
+  it should "generate the same move counts as stockfish" in {
+    val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+    val results = (1 to 5).map(i => {
+      println(s"Testing valid move generations, ${i} ply...")
+      getNumberOfMoveSequences(i, gameState, false)
+    })
 
-  //   results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
-  // }
+    results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
+  }
 
   /* Utility functions */
 
-  private def getNumberOfMoveSequences(depth: Int, gameState: GameState, doPrint: Boolean): Long = {
+  def getNumberOfMoveSequences(depth: Int, gameState: GameState, doPrint: Boolean): Long = {
     if (depth == 0) return 1
 
-    val moves = getAllLegalMoves(gameState)
-    var numPositions: Long = 0
+    val moves = getAllLegalMoves(getLegalMoves)(gameState)
 
-    for ((startPos, endPos, pieceType) <- moves) {
-      val updatedGameState = updateGameState(gameState, startPos, endPos, pieceType)
-      numPositions += getNumberOfMoveSequences(depth - 1, updatedGameState, false)
-    }
+    if (moves.isEmpty) 0
+    else
+      ParSeq
+        .fromSpecific(moves)
+        .map({ case (startPos, endPos, pieceType) =>
+          val updatedGameState = updateGameState(gameState, startPos, endPos, pieceType)
 
-    if (doPrint) println(s"Depth: ${depth} ply\tResult: ${numPositions} positions")
+          val res = getNumberOfMoveSequences(depth - 1, updatedGameState, false)
 
-    return numPositions
+          if (doPrint)
+            println(s"${startPos.toFileRank()}${endPos.toFileRank()}${if (pieceType == null) ""
+            else pieceType.toString()}\tResult: ${res}")
+
+          res
+        })
+        .reduce(_ + _)
   }
 
-  private def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
+  def getAllLegalMoves(
+      getMoveFn: (GameState, Position) => List[Position]
+  )(gameState: GameState): List[(Position, Position, PieceType)] = {
     val pieceMoves = gameState.piecesIndex.view
       .filterKeys(_.color == gameState.whoseMove)
       .values
       .flatten
-      .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
+      .flatMap(pos => getMoveFn(gameState, pos).map((pos, _)))
       .toList
 
     def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
@@ -241,6 +239,46 @@ class ValidMovesTest extends UnitSpec {
     }
 
     pieceMoves.flatMap(addPawnPromotion)
+  }
+
+  def profileMoveGeneration(numRepeat: Int) = {
+    val newTime = time {
+      repeat(numRepeat) {
+        val gameState = getRealisticGameState()
+
+        getAllLegalMoves(getLegalMoves)(gameState)
+      }
+    }._2 / numRepeat
+
+    val oldTime = time {
+      repeat(numRepeat) {
+        val gameState = getRealisticGameState()
+
+        getAllLegalMoves(getLegalMoves_OLD)(gameState)
+      }
+    }._2 / numRepeat
+
+    println(s"Old time (avg of ${numRepeat} runs: ${oldTime} ns).")
+    println(s"New time (avg of ${numRepeat} runs: ${newTime} ns).")
+  }
+
+  private def getRealisticGameState(): GameState = {
+    val whiteKingPosition = getPosition()
+    var blackKingPosition = getPosition()
+    // make sure these are different
+    while (blackKingPosition == whiteKingPosition) {
+      blackKingPosition = getPosition()
+    }
+
+    // Make sure game only has one king of each type
+    getGameState(skipKings = true)
+      .updateSquare(whiteKingPosition, Piece(White, King))
+      .updateSquare(blackKingPosition, Piece(Black, King))
+      .updateEnPassantTarget(null)
+      .updateCastleStatus(Piece(White, King), false)
+      .updateCastleStatus(Piece(White, Queen), false)
+      .updateCastleStatus(Piece(Black, King), false)
+      .updateCastleStatus(Piece(Black, Queen), false)
   }
 
 }

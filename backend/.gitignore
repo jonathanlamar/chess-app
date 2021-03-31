@@ -54,3 +54,5 @@ target
 .metals
 .scalafmt.conf
 .g8
+
+scripts/

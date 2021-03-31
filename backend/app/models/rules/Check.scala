@@ -8,13 +8,24 @@ object Check {
     val attackingPiecePositions =
       gameState.piecesIndex
         .filter({ case (k: Square, v: List[Position]) => k.color == color })
-        .values
         .toList
-        .flatten
+        .flatMap({ case (p, poss) => poss.map((p, _)) })
+    val kingColor = if (color == White) Black else White
+    val kingPosition = gameState.piecesIndex(Piece(kingColor, King)).headOption match {
+      case None        => throw new Exception("No King position")
+      case Some(value) => value
+    }
 
-    attackingPiecePositions
-      .flatMap(pos => allPossibleMoves(gameState.updateWhoseMove(color), pos))
-      .distinct
+    // Coax out the correct behavior
+    val testGameState = gameState.updateWhoseMove(color).updateSquare(kingPosition, Blank)
+
+    attackingPiecePositions.distinct
+      .flatMap({ case (p, pos) =>
+        if (p.pieceType == Pawn)
+          doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
+        else
+          allPossibleMoves(testGameState, pos, captureSameColor = true)
+      })
   }
 
   def isCurrentPlayerInCheck(gameState: GameState): Boolean =
