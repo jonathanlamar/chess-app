@@ -2,7 +2,7 @@ package models.rules
 
 import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.isCurrentPlayerInCheck
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
+import models.rules.ValidMoves._
 import models.utils.DataTypes._
 import models.utils.Pieces._
 import scala.collection.parallel.ParSeq
@@ -213,30 +213,6 @@ class ValidMovesTest extends UnitSpec {
           res
         })
         .reduce(_ + _)
-  }
-
-  def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
-    val pieceMoves = gameState.piecesIndex.view
-      .filterKeys(_.color == gameState.whoseMove)
-      .values
-      .flatten
-      .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
-      .toList
-
-    def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
-      gameState.squares(move._1.row)(move._1.col) match {
-        case Blank => throw new Exception("Cannot move blank square")
-        case Piece(color, Pawn) =>
-          if ((color == Black && move._2.row == 7) || (color == White && move._2.row == 0)) {
-            List(Rook, Knight, Bishop, Queen).map((move._1, move._2, _))
-          } else {
-            List((move._1, move._2, null))
-          }
-        case _: Piece => List((move._1, move._2, null))
-      }
-    }
-
-    pieceMoves.flatMap(addPawnPromotion)
   }
 
   private def getRealisticGameState(): GameState = {

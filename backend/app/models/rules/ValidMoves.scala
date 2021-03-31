@@ -8,6 +8,30 @@ import scala.math.{abs, max}
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
+  def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
+    val pieceMoves = gameState.piecesIndex.view
+      .filterKeys(_.color == gameState.whoseMove)
+      .values
+      .flatten
+      .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
+      .toList
+
+    def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
+      gameState.squares(move._1.row)(move._1.col) match {
+        case Blank => throw new Exception("Cannot move blank square")
+        case Piece(color, Pawn) =>
+          if ((color == Black && move._2.row == 7) || (color == White && move._2.row == 0)) {
+            List(Rook, Knight, Bishop, Queen).map((move._1, move._2, _))
+          } else {
+            List((move._1, move._2, null))
+          }
+        case _: Piece => List((move._1, move._2, null))
+      }
+    }
+
+    pieceMoves.flatMap(addPawnPromotion)
+  }
+
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
     val kingPos = gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
       case Some(value) =>
