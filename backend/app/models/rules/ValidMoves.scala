@@ -8,17 +8,6 @@ import scala.math.{abs, max}
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
-  def getLegalMoves_OLD(gameState: GameState, pos: Position): List[Position] = {
-    val maybeLegalMoves = allPossibleMoves(gameState, pos)
-      .filter(newPos =>
-        !isPlayerInCheck(updateGameState(gameState, pos, newPos), gameState.whoseMove)
-      )
-
-    if (isCurrentPlayerInCheck(gameState))
-      maybeLegalMoves.filter(newPos => !isCastleMove(gameState, pos, newPos))
-    else maybeLegalMoves
-  }
-
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
     val kingPos = gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
       case Some(value) =>
@@ -240,7 +229,7 @@ object ValidMoves {
           gameState.castleStatus.blackQueen &&
             gameState.squares(0).slice(1, 4).forall(_.isBlank) &&
             attackSquares.intersect(List(Position(0, 2), Position(0, 3))).isEmpty
-          )
+        )
       case White =>
         List(
           gameState.castleStatus.whiteKing &&

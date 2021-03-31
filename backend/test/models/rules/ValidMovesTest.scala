@@ -2,7 +2,7 @@ package models.rules
 
 import models.actions.UpdateGameState.updateGameState
 import models.rules.Check.isCurrentPlayerInCheck
-import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getLegalMoves_OLD, getRaySquares}
+import models.rules.ValidMoves.{allPossibleMoves, getLegalMoves, getRaySquares}
 import models.utils.DataTypes._
 import models.utils.Pieces._
 import scala.collection.parallel.ParSeq
@@ -195,7 +195,7 @@ class ValidMovesTest extends UnitSpec {
   def getNumberOfMoveSequences(depth: Int, gameState: GameState, doPrint: Boolean): Long = {
     if (depth == 0) return 1
 
-    val moves = getAllLegalMoves(getLegalMoves)(gameState)
+    val moves = getAllLegalMoves(gameState)
 
     if (moves.isEmpty) 0
     else
@@ -215,14 +215,12 @@ class ValidMovesTest extends UnitSpec {
         .reduce(_ + _)
   }
 
-  def getAllLegalMoves(
-      getMoveFn: (GameState, Position) => List[Position]
-  )(gameState: GameState): List[(Position, Position, PieceType)] = {
+  def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
     val pieceMoves = gameState.piecesIndex.view
       .filterKeys(_.color == gameState.whoseMove)
       .values
       .flatten
-      .flatMap(pos => getMoveFn(gameState, pos).map((pos, _)))
+      .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
       .toList
 
     def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
@@ -239,27 +237,6 @@ class ValidMovesTest extends UnitSpec {
     }
 
     pieceMoves.flatMap(addPawnPromotion)
-  }
-
-  def profileMoveGeneration(numRepeat: Int) = {
-    val newTime = time {
-      repeat(numRepeat) {
-        val gameState = getRealisticGameState()
-
-        getAllLegalMoves(getLegalMoves)(gameState)
-      }
-    }._2 / numRepeat
-
-    val oldTime = time {
-      repeat(numRepeat) {
-        val gameState = getRealisticGameState()
-
-        getAllLegalMoves(getLegalMoves_OLD)(gameState)
-      }
-    }._2 / numRepeat
-
-    println(s"Old time (avg of ${numRepeat} runs: ${oldTime} ns).")
-    println(s"New time (avg of ${numRepeat} runs: ${newTime} ns).")
   }
 
   private def getRealisticGameState(): GameState = {
