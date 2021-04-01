@@ -113,9 +113,15 @@ object DataTypes {
   }
 
   sealed trait MoveLike
-  final object NoMove extends MoveLike
+  final object NoMove extends MoveLike {
+    override def toString(): String = "NO MOVE"
+  }
   final case class Move(from: Position, to: Position, promotePawnType: PieceType = null)
-      extends MoveLike
+      extends MoveLike {
+    override def toString(): String =
+      if (promotePawnType == null) from.toFileRank() + to.toFileRank()
+      else from.toFileRank() + to.toFileRank() + promotePawnType.toString()
+  }
 
   object Move {
     val promoteTypeMap: Map[Char, PieceType] = Map(
