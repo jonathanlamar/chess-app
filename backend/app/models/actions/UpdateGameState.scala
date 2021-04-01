@@ -8,30 +8,29 @@ import scala.math.{abs, signum}
   * proposed by ValidMoves.
   */
 object UpdateGameState {
-  def updateGameState(
-      gameState: GameState,
-      movingPiecePos: Position,
-      destinationPos: Position,
-      promotePawnPieceType: PieceType = null
-  ): GameState = {
-    if (movingPiecePos == destinationPos) return gameState
+  def updateGameState(gameState: GameState, move: MoveLike): GameState = {
+    move match {
+      case Move(movingPiecePos, destinationPos, promotePawnPieceType) =>
+        if (movingPiecePos == destinationPos) return gameState
 
-    val movingPiece = gameState.squares(movingPiecePos.row)(movingPiecePos.col)
-    val destinationSquare = gameState.squares(destinationPos.row)(destinationPos.col)
+        val movingPiece = gameState.squares(movingPiecePos.row)(movingPiecePos.col)
+        val destinationSquare = gameState.squares(destinationPos.row)(destinationPos.col)
 
-    movingPiece match {
-      case Blank => throw new Exception("Cannot move blank square")
-      case p: Piece => {
-        gameState
-          .transform(updateMoveCounts(p, destinationSquare))
-          .transform(handleCapture(p, destinationSquare, destinationPos))
-          .transform(handleCastling(movingPiecePos, p, destinationPos))
-          .transform(updateEnPassantTarget(movingPiecePos, p, destinationPos))
-          .transform(updateCastleStatus(p, movingPiecePos, destinationPos))
-          .transform(updatePiecePosition(movingPiecePos, p, destinationPos))
-          .transform(maybeHandlePawnPromotion(p, destinationPos, promotePawnPieceType))
-          .transform(updateWhoseMove)
-      }
+        movingPiece match {
+          case Blank => throw new Exception("Cannot move blank square")
+          case p: Piece => {
+            gameState
+              .transform(updateMoveCounts(p, destinationSquare))
+              .transform(handleCapture(p, destinationSquare, destinationPos))
+              .transform(handleCastling(movingPiecePos, p, destinationPos))
+              .transform(updateEnPassantTarget(movingPiecePos, p, destinationPos))
+              .transform(updateCastleStatus(p, movingPiecePos, destinationPos))
+              .transform(updatePiecePosition(movingPiecePos, p, destinationPos))
+              .transform(maybeHandlePawnPromotion(p, destinationPos, promotePawnPieceType))
+              .transform(updateWhoseMove)
+          }
+        }
+      case NoMove => gameState
     }
   }
 

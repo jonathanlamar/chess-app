@@ -22,7 +22,7 @@ object RandomAi {
       // This will not be used if the conditions are not right for a pawn promotion.
       val promotePawnPieceType = List(Knight, Bishop, Rook, Queen)(Random.nextInt(4))
 
-      updateGameState(gameState, srcPos, destPos, promotePawnPieceType)
+      updateGameState(gameState, Move(srcPos, destPos, promotePawnPieceType))
     }
   }
 }

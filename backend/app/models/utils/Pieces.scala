@@ -13,12 +13,8 @@ object Pieces {
     gameState.enPassantTarget + delta
   }
 
-  def getOptionalDelta(
-      fromPos: Position,
-      toPos: Position,
-      slidingPieceType: PieceType
-  ): Option[Position] = {
-    val diff = toPos - fromPos
+  def getOptionalDelta(move: Move, slidingPieceType: PieceType): Option[Position] = {
+    val diff = move.to - move.from
     val m = max(abs(diff.row), abs(diff.col)).toDouble
     val maybeDelta =
       if ((diff.row / m).isWhole && (diff.col / m).isWhole)
@@ -61,7 +57,8 @@ object Pieces {
 
     val slidingPieces = getSlidingPieces(gameState, attackColor)
       .flatMap({ case (pieceType, oppPos) =>
-        getOptionalDelta(oppPos, kingPos, pieceType).map((pieceType, oppPos, _))
+        val move = Move(oppPos, kingPos)
+        getOptionalDelta(move, pieceType).map((pieceType, oppPos, _))
       })
       .filter({ case (_, oppPos, delta) =>
         getRayPositions(gameState, oppPos, delta, attackColor).contains(kingPos)

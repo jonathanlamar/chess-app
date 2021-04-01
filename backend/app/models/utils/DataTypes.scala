@@ -5,13 +5,17 @@ import models.utils.Fen._
 /** Data model for chess pieces, positions, and boards. */
 object DataTypes {
 
-  sealed trait Color
+  sealed trait Color {
+    def reverse: Color
+  }
 
   final object White extends Color {
     override def toString(): String = "W"
+    override def reverse: Color = Black
   }
   final object Black extends Color {
     override def toString(): String = "B"
+    override def reverse: Color = White
   }
 
   sealed trait PieceType
@@ -105,6 +109,42 @@ object DataTypes {
       val c = "abcdefgh".indexOf(fileRank.substring(0, 1))
 
       Position(r, c)
+    }
+  }
+
+  sealed trait MoveLike
+  final object NoMove extends MoveLike
+  final case class Move(from: Position, to: Position, promotePawnType: PieceType = null)
+      extends MoveLike
+
+  object Move {
+    val promoteTypeMap: Map[Char, PieceType] = Map(
+      ('p', Pawn),
+      ('n', Knight),
+      ('b', Bishop),
+      ('r', Rook),
+      ('q', Queen),
+      ('k', King),
+      ('P', Pawn),
+      ('N', Knight),
+      ('B', Bishop),
+      ('R', Rook),
+      ('Q', Queen),
+      ('K', King)
+    )
+
+    def apply(fileRankMove: String): Move = {
+      if ("""^[a-h][1-8][a-h][1-8]$""".r.matches(fileRankMove)) {
+        Move(Position(fileRankMove.substring(0, 2)), Position(fileRankMove.substring(2, 4)))
+      } else if ("""^[a-h][1-8][a-h][1-8][pPnNbBrRqQkK]$""".r.matches(fileRankMove)) {
+        val promoteType = promoteTypeMap(fileRankMove.charAt(4))
+
+        Move(
+          Position(fileRankMove.substring(0, 2)),
+          Position(fileRankMove.substring(2, 4)),
+          promoteType
+        )
+      } else throw new Exception("Cannot parse fileRankMove string")
     }
   }
 

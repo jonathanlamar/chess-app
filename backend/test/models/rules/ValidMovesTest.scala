@@ -201,17 +201,22 @@ class ValidMovesTest extends UnitSpec {
     else
       ParSeq
         .fromSpecific(moves)
-        .map({ case (startPos, endPos, pieceType) =>
-          val updatedGameState = updateGameState(gameState, startPos, endPos, pieceType)
+        .map(move =>
+          move match {
+            case Move(startPos, endPos, pieceType) => {
+              val updatedGameState = updateGameState(gameState, move)
 
-          val res = getNumberOfMoveSequences(depth - 1, updatedGameState, false)
+              val res = getNumberOfMoveSequences(depth - 1, updatedGameState, false)
 
-          if (doPrint)
-            println(s"${startPos.toFileRank()}${endPos.toFileRank()}${if (pieceType == null) ""
-            else pieceType.toString()}\tResult: ${res}")
+              if (doPrint)
+                println(s"${startPos.toFileRank()}${endPos.toFileRank()}${if (pieceType == null) ""
+                else pieceType.toString()}\tResult: ${res}")
 
-          res
-        })
+              res
+            }
+            case NoMove => throw new Exception("getAllLegalMoves returned nonsense")
+          }
+        )
         .reduce(_ + _)
   }
 

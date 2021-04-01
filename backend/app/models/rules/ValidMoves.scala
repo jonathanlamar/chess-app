@@ -8,7 +8,7 @@ import scala.math.{abs, max}
 
 /** Logic for generating all valid moves for a piece. */
 object ValidMoves {
-  def getAllLegalMoves(gameState: GameState): List[(Position, Position, PieceType)] = {
+  def getAllLegalMoves(gameState: GameState): List[MoveLike] = {
     val pieceMoves = gameState.piecesIndex.view
       .filterKeys(_.color == gameState.whoseMove)
       .values
@@ -16,22 +16,23 @@ object ValidMoves {
       .flatMap(pos => getLegalMoves(gameState, pos).map((pos, _)))
       .toList
 
-    def addPawnPromotion(move: (Position, Position)): List[(Position, Position, PieceType)] = {
+    def addPawnPromotion(move: (Position, Position)): List[Move] = {
       gameState.squares(move._1.row)(move._1.col) match {
         case Blank => throw new Exception("Cannot move blank square")
         case Piece(color, Pawn) =>
           if ((color == Black && move._2.row == 7) || (color == White && move._2.row == 0)) {
-            List(Rook, Knight, Bishop, Queen).map((move._1, move._2, _))
+            List(Rook, Knight, Bishop, Queen).map(Move(move._1, move._2, _))
           } else {
-            List((move._1, move._2, null))
+            List(Move(move._1, move._2, null))
           }
-        case _: Piece => List((move._1, move._2, null))
+        case _: Piece => List(Move(move._1, move._2, null))
       }
     }
 
     pieceMoves.flatMap(addPawnPromotion)
   }
 
+  // TODO: Consider updating to use Move class
   def getLegalMoves(gameState: GameState, pos: Position): List[Position] = {
     val kingPos = gameState.piecesIndex.get(Piece(gameState.whoseMove, King)) match {
       case Some(value) =>
@@ -65,7 +66,8 @@ object ValidMoves {
     // Look for sliding piece attacks blocked by pos.
     getSlidingPieces(gameState, opponentColor)
       .flatMap({ case (pieceType, oppPos) =>
-        getOptionalDelta(oppPos, kingPos, pieceType).map((oppPos, _))
+        val move = Move(oppPos, kingPos)
+        getOptionalDelta(move, pieceType).map((oppPos, _))
       })
       .foreach({
         case (oppPos, delta) => {
@@ -91,7 +93,8 @@ object ValidMoves {
       pos: Position
   ): List[Position] = {
     if (isSlidingPiece(pieceType)) {
-      getOptionalDelta(pos, kingPos, pieceType) match {
+      val move = Move(pos, kingPos)
+      getOptionalDelta(move, pieceType) match {
         case None        => List(pos)
         case Some(value) => pos :: getRayPositions(gameState, pos, value, color)
       }
@@ -112,16 +115,6 @@ object ValidMoves {
       .map(p => (p, gameState.squares(p.row)(p.col)))
   }
 
-  def getOptionalDelta2(fromPos: Position, toPos: Position): Option[Position] = {
-    val diff = toPos - fromPos
-    val m = max(abs(diff.row), abs(diff.col)).toDouble
-
-    if ((diff.row / m).isWhole && (diff.col / m).isWhole)
-      Some(Position((diff.row / m).toInt, (diff.col / m).toInt))
-    else None
-  }
-
-  // TODO - refactor to positionsBlockCapture(gs, positions: List[Position], rayToKing): Boolean
   def posIsBlocking(
       gameState: GameState,
       pos: Position,

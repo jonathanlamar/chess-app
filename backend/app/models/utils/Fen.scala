@@ -33,8 +33,6 @@ import models.utils.DataTypes._
   */
 object Fen {
 
-  // TODO: Write logic for encoding FEN strings.
-
   val fenRegex =
     """\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$""".r
 
@@ -81,10 +79,7 @@ object Fen {
 
   def toFenString(gameState: GameState): String = {
     val fenBoard = toFenBoard(gameState.squares)
-    val whoseMove = gameState.whoseMove match {
-      case Black => "b"
-      case White => "w"
-    }
+    val whoseMove = gameState.whoseMove.toString().toLowerCase()
     val castleStatus = toFenCastleStatus(gameState.castleStatus)
     val enPassantTarget =
       if (gameState.enPassantTarget != null) gameState.enPassantTarget.toFileRank() else "-"
@@ -156,7 +151,7 @@ object Fen {
       .filter(_._1)
       .map(_._2)
 
-      if (!statusLetters.isEmpty) statusLetters.reduce(_ + _)
-      else "-"
+    if (!statusLetters.isEmpty) statusLetters.reduce(_ + _)
+    else "-"
   }
 }

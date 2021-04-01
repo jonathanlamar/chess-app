@@ -43,16 +43,15 @@ class UpdateController @Inject() (val controllerComponents: ControllerComponents
       )
   }
 
+  // TODO: Allow pawn promotion inline
   def getAll(
       fenString: String,
       movingPieceFileRank: String,
       destinationFileRank: String
   ): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
-    val movingPiecePos = Position(movingPieceFileRank)
-    val destinationPos = Position(destinationFileRank)
-
-    val updatedBoard: GameState = updateGameState(gameState, movingPiecePos, destinationPos)
+    val move = Move(Position(movingPieceFileRank), Position(destinationFileRank))
+    val updatedBoard: GameState = updateGameState(gameState, move)
 
     // TODO: Try logic for exception handling
     val json = Json.toJson(JsonFriendlyGameState(updatedBoard))
