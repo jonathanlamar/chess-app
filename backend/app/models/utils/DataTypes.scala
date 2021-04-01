@@ -175,9 +175,10 @@ object DataTypes {
   ) {
     override def toString(): String = {
       squares
-        .map(row => row.foldLeft("-" * 17 + "\n|")((str, s) => str + s.toString() + "|"))
-        .map(_ + "\n")
-        .mkString + "-" * 17
+        .map(row => row.foldLeft("+---" * 8 + "+\n|")((str, s) => str + " " + s.toString() + " |"))
+        .zipWithIndex
+        .map({ case (s: String, i: Int) => s + " " + (8 - i).toString() + "\n" })
+        .mkString + "+---" * 8 + "+\n  a   b   c   d   e   f   g   h"
     }
 
     def transform(f: GameState => GameState): GameState = f(this)
