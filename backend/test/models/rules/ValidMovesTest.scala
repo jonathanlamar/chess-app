@@ -180,15 +180,15 @@ class ValidMovesTest extends UnitSpec {
   behavior of "Valid moves generation"
 
   /** E2E valid moves count test (comparing to stockfish) */
-  it should "generate the same move counts as stockfish" in {
-    val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
-    val results = (1 to 5).map(i => {
-      println(s"Testing valid move generations, ${i} ply...")
-      getNumberOfMoveSequences(i, gameState, false)
-    })
+  // it should "generate the same move counts as stockfish" in {
+  //   val gameState = GameState("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+  //   val results = (1 to 5).map(i => {
+  //     println(s"Testing valid move generations, ${i} ply...")
+  //     getNumberOfMoveSequences(i, gameState, false)
+  //   })
 
-    results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
-  }
+  //   results should contain theSameElementsAs List(44, 1486, 62379, 2103487, 89941194)
+  // }
 
   /* Utility functions */
 
