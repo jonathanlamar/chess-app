@@ -2,7 +2,7 @@ package controllers
 
 import java.net.URLDecoder
 import javax.inject._
-import models.ai.random.RandomAi
+import models.ai.minimax.AlphaBeta
 import models.utils.DataTypes._
 import models.utils.Fen._
 import play.api._
@@ -46,7 +46,7 @@ class AiController @Inject() (val controllerComponents: ControllerComponents)
   def getRandom(fenString: String): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
 
-    val updatedBoard: GameState = RandomAi.makeMove(gameState)
+    val updatedBoard: GameState = AlphaBeta.makeMove(gameState)
 
     // TODO: Try logic for exception handling
     val json = Json.toJson(JsonFriendlyGameState(updatedBoard))
