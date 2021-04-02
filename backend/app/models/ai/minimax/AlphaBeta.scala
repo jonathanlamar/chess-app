@@ -1,8 +1,8 @@
 package models.ai.minimax
 
 import models.actions.UpdateGameState.updateGameState
-import models.ai.minimax.Scoring.score
-import models.rules.Check.isCurrentPlayerInCheck
+import models.ai.minimax.Scoring._
+import models.rules.Check.{isCurrentPlayerInCheck, getAttackSquares}
 import models.rules.ValidMoves._
 import models.utils.DataTypes._
 import scala.collection.parallel.ParSeq
@@ -12,6 +12,7 @@ object AlphaBeta {
   val negativeInfinity = Int.MinValue
   val positiveInfinity = Int.MaxValue
 
+  // TODO: Understand what alpha and beta are.
   /** Minmax algorithm with alpha/beta pruning. See
     * https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
     * This algorithm is inherently serial, since the search of nodes depends on
@@ -93,4 +94,31 @@ object AlphaBeta {
 
     updateGameState(gameState, move)
   }
+
+  private def moveOrder(gameState: GameState): Ordering[Move] = Ordering.by(move => {
+    var moveScoreGuess = 0
+    val movePieceType = gameState.squares(move.from) match {
+      case Blank               => throw new Exception("Eyy, tryan'a move a blank square")
+      case Piece(_, pieceType) => pieceType
+    }
+
+    gameState.squares(move.to) match {
+      case Blank => ()
+      case Piece(_, pieceType) =>
+        moveScoreGuess += 10 * pieceScores(pieceType) - pieceScores(movePieceType)
+    }
+
+    if (
+      movePieceType == Pawn && (
+        (gameState.whoseMove == White && move.to.row == 0) ||
+          (gameState.whoseMove == Black && move.to.row == 7)
+      )
+    ) moveScoreGuess += pieceScores(movePieceType)
+
+    // TODO: Make a hash map for attack squares
+    if (getAttackSquares(gameState, gameState.whoseMove.reverse).contains(move.to))
+      moveScoreGuess -= pieceScores(movePieceType)
+
+    moveScoreGuess
+  })
 }
