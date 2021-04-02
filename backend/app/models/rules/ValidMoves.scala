@@ -1,7 +1,7 @@
 package models.rules
 
 import models.actions.UpdateGameState.updateGameState
-import models.rules.Check.{getAttackSquares, isPlayerInCheck, isCurrentPlayerInCheck}
+import models.rules.Check.{isPlayerInCheck, isCurrentPlayerInCheck}
 import models.utils.DataTypes._
 import models.utils.Pieces._
 import scala.math.{abs, max}
@@ -46,7 +46,7 @@ object ValidMoves {
     var pseudoLegalMoves = allPossibleMoves(gameState, pos)
 
     // Short circuit for king case
-    if (pos == kingPos) return pseudoLegalMoves.diff(getAttackSquares(gameState, opponentColor))
+    if (pos == kingPos) return pseudoLegalMoves.filter(!gameState.opponentAttackSquares(_))
 
     // Have to cover or capture attacking pieces.
     if (isCurrentPlayerInCheck(gameState)) {
@@ -225,7 +225,7 @@ object ValidMoves {
         deltas ::: getCastlePositions(gameState, color)
       else deltas
 
-    doBasicFilters(pos, color, allMoveDeltas)
+    filterAndProcessDeltas(pos, color, allMoveDeltas)
       .filter(p =>
         gameState.squares(p).isBlank ||
           gameState.squares(p).color != color ||
@@ -235,26 +235,28 @@ object ValidMoves {
 
   def getCastlePositions(gameState: GameState, color: Color): List[Position] = {
     val otherColor = gameState.whoseMove.reverse
-    lazy val attackSquares = getAttackSquares(gameState, otherColor)
-
     val canCastle = color match {
       case Black =>
         List(
           gameState.castleStatus.blackKing &&
             gameState.squares(0).slice(5, 7).forall(_.isBlank) &&
-            attackSquares.intersect(List(Position(0, 5), Position(0, 6))).isEmpty,
+            !gameState.opponentAttackSquares(Position(0, 5)) &&
+            !gameState.opponentAttackSquares(Position(0, 6)),
           gameState.castleStatus.blackQueen &&
             gameState.squares(0).slice(1, 4).forall(_.isBlank) &&
-            attackSquares.intersect(List(Position(0, 2), Position(0, 3))).isEmpty
+            !gameState.opponentAttackSquares(Position(0, 2)) &&
+            !gameState.opponentAttackSquares(Position(0, 3))
         )
       case White =>
         List(
           gameState.castleStatus.whiteKing &&
             gameState.squares(7).slice(5, 7).forall(_.isBlank) &&
-            attackSquares.intersect(List(Position(7, 5), Position(7, 6))).isEmpty,
+            !gameState.opponentAttackSquares(Position(7, 5)) &&
+            !gameState.opponentAttackSquares(Position(7, 6)),
           gameState.castleStatus.whiteQueen &&
             gameState.squares(7).slice(1, 4).forall(_.isBlank) &&
-            attackSquares.intersect(List(Position(7, 2), Position(7, 3))).isEmpty
+            !gameState.opponentAttackSquares(Position(7, 2)) &&
+            !gameState.opponentAttackSquares(Position(7, 3))
         )
     }
 
@@ -270,7 +272,7 @@ object ValidMoves {
     val deltas =
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
-    val normalMovePieces = doBasicFilters(pos, color, deltas)
+    val normalMovePieces = filterAndProcessDeltas(pos, color, deltas)
       .map(p => (p, gameState.squares(p)))
       .takeWhile(_._2.isBlank)
       .map(_._1)
@@ -292,7 +294,7 @@ object ValidMoves {
       color: Color,
       captureSameColor: Boolean = false
   ): List[Position] = {
-    doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
+    filterAndProcessDeltas(pos, color, List(Position(-1, -1), Position(-1, 1)))
       .filter(p =>
         (!gameState.squares(p).isBlank &&
           gameState.squares(p).color != color) ||
@@ -318,7 +320,7 @@ object ValidMoves {
       Position(2, 1)
     )
 
-    doBasicFilters(pos, color, deltas)
+    filterAndProcessDeltas(pos, color, deltas)
       .filter(p =>
         gameState.squares(p).isBlank ||
           gameState.squares(p).color != color ||
@@ -326,7 +328,11 @@ object ValidMoves {
       )
   }
 
-  def doBasicFilters(pos: Position, color: Color, deltas: List[Position]): List[Position] = {
+  def filterAndProcessDeltas(
+      pos: Position,
+      color: Color,
+      deltas: List[Position]
+  ): List[Position] = {
     deltas
       .map(delta =>
         color match {

@@ -4,30 +4,6 @@ import models.rules.ValidMoves._
 import models.utils.DataTypes._
 
 object Check {
-  def getAttackSquares(gameState: GameState, color: Color): List[Position] = {
-    val attackingPiecePositions =
-      gameState.piecesIndex
-        .filter({ case (k: Square, v: List[Position]) => k.color == color })
-        .toList
-        .flatMap({ case (p, poss) => poss.map((p, _)) })
-    val kingColor = color.reverse
-    val kingPosition = gameState.piecesIndex(Piece(kingColor, King)).headOption match {
-      case None        => throw new Exception("No King position")
-      case Some(value) => value
-    }
-
-    // Coax out the correct behavior
-    val testGameState = gameState.updateWhoseMove(color).updateSquare(kingPosition, Blank)
-
-    attackingPiecePositions.distinct
-      .flatMap({ case (p, pos) =>
-        if (p.pieceType == Pawn)
-          doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
-        else
-          allPossibleMoves(testGameState, pos, captureSameColor = true)
-      })
-  }
-
   def isCurrentPlayerInCheck(gameState: GameState): Boolean =
     isPlayerInCheck(gameState, gameState.whoseMove)
 

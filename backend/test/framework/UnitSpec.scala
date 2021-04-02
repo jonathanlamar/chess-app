@@ -119,4 +119,23 @@ abstract class UnitSpec extends AnyFlatSpec with should.Matchers {
     case Nil => throw new Exception("Cannot return element of empty list")
     case _   => ls(nextInt(ls.length))
   }
+
+  def getRealisticGameState(): GameState = {
+    val whiteKingPosition = getPosition()
+    var blackKingPosition = getPosition()
+    // make sure these are different
+    while (blackKingPosition == whiteKingPosition) {
+      blackKingPosition = getPosition()
+    }
+
+    // Make sure game only has one king of each type
+    getGameState(skipKings = true)
+      .updateSquare(whiteKingPosition, Piece(White, King))
+      .updateSquare(blackKingPosition, Piece(Black, King))
+      .updateEnPassantTarget(null)
+      .updateCastleStatus(Piece(White, King), false)
+      .updateCastleStatus(Piece(White, Queen), false)
+      .updateCastleStatus(Piece(Black, King), false)
+      .updateCastleStatus(Piece(Black, Queen), false)
+  }
 }

@@ -1,6 +1,9 @@
 package models.utils
 
+import models.rules.ValidMoves.{filterAndProcessDeltas, allPossibleMoves}
 import models.utils.Fen._
+import models.utils.Pieces.getAttackingPieces
+import scala.collection.mutable.HashMap
 
 /** Data model for chess pieces, positions, and boards. */
 object DataTypes {
@@ -187,6 +190,8 @@ object DataTypes {
         .mkString + "+---" * 8 + "+\n  a   b   c   d   e   f   g   h"
     }
 
+    def squares(pos: Position): Square = squares(pos.row)(pos.col)
+
     def transform(f: GameState => GameState): GameState = f(this)
 
     lazy val piecesIndex: Map[Piece, List[Position]] = {
@@ -198,7 +203,33 @@ object DataTypes {
         .toMap
     }
 
-    def squares(pos: Position): Square = squares(pos.row)(pos.col)
+    // FIXME: This must be lazy to avoid stack overflow.  That pushed
+    // computation time onto the routines who need this data.  Kinda defeats
+    // the point of hashing.
+    lazy val opponentAttackSquares: Map[Position, Boolean] = {
+      var squareMap: HashMap[Position, Boolean] =
+        HashMap.from(for (r <- 0 until 8; c <- 0 until 8) yield Position(r, c) -> false)
+      val kingPosition = piecesIndex(Piece(whoseMove, King)).headOption match {
+        case None        => throw new Exception("No King position")
+        case Some(value) => value
+      }
+      // Coax out the correct behavior
+      val testGameState = this.updateWhoseMove(whoseMove.reverse).updateSquare(kingPosition, Blank)
+
+      piecesIndex
+        .filter({ case (k, v) => k.color == whoseMove.reverse })
+        .toList
+        .flatMap({ case (p, poss) => poss.map((p, _)) })
+        .flatMap({ case (p, pos) =>
+          if (p.pieceType == Pawn)
+            filterAndProcessDeltas(pos, whoseMove.reverse, List(Position(-1, -1), Position(-1, 1)))
+          else
+            allPossibleMoves(testGameState, pos, captureSameColor = true)
+        })
+        .foreach(pos => squareMap(pos) = true)
+
+      squareMap.toMap
+    }
 
     // TODO: These are ugly.  Should really use builder pattern here.
     def updateSquare(pos: Position, square: Square): GameState = {

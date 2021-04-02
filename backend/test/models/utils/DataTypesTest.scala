@@ -1,11 +1,14 @@
 package models.utils
 
+import models.utils.DataTypes._
 import models.utils.Fen.{parseFenString, toFenString}
 import test.framework.UnitSpec
 
 class DataTypesTest extends UnitSpec {
 
-  "toFenString(parseFenString)" should "be the identity" in {
+  behavior of "FEN encoding and decoding"
+
+  it should "be left inverse of each other" in {
     repeat(10) {
       val fenString = getFenString()
 
@@ -13,7 +16,7 @@ class DataTypesTest extends UnitSpec {
     }
   }
 
-  "parseFenString(toFenString)" should "be the identity" in {
+  it should "be right inverse of each other" in {
     repeat(10) {
       val gameState = getGameState()
 

@@ -2,7 +2,7 @@ package models.ai.minimax
 
 import models.actions.UpdateGameState.updateGameState
 import models.ai.minimax.Scoring._
-import models.rules.Check.{isCurrentPlayerInCheck, getAttackSquares}
+import models.rules.Check.isCurrentPlayerInCheck
 import models.rules.ValidMoves._
 import models.utils.DataTypes._
 import scala.collection.parallel.ParSeq
@@ -115,8 +115,7 @@ object AlphaBeta {
       )
     ) moveScoreGuess += pieceScores(movePieceType)
 
-    // TODO: Make a hash map for attack squares
-    if (getAttackSquares(gameState, gameState.whoseMove.reverse).contains(move.to))
+    if (gameState.opponentAttackSquares(move.to))
       moveScoreGuess -= pieceScores(movePieceType)
 
     moveScoreGuess
