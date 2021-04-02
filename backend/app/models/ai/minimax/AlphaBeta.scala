@@ -6,11 +6,17 @@ import models.rules.Check.isCurrentPlayerInCheck
 import models.rules.ValidMoves._
 import models.utils.DataTypes._
 import scala.collection.parallel.ParSeq
-import scala.math.{min, max}
+import scala.math.{min, max, abs}
 
 object AlphaBeta {
   val negativeInfinity = Int.MinValue
   val positiveInfinity = Int.MaxValue
+
+  def makeMove(gameState: GameState): GameState = {
+    val move = search(gameState, 4)._1
+
+    updateGameState(gameState, move)
+  }
 
   // TODO: Understand what alpha and beta are.
   /** Minmax algorithm with alpha/beta pruning. See
@@ -33,7 +39,7 @@ object AlphaBeta {
       maximizingPlayer: Boolean = true
   ): (MoveLike, Int) = {
     if (depth == 0) {
-      val thisScore = score(gameState)
+      val thisScore = searchAllCaptures(gameState, alpha, beta)
 
       if (maximizingPlayer) return (NoMove, thisScore)
       else return (NoMove, -thisScore)
@@ -90,9 +96,45 @@ object AlphaBeta {
     }
   }
 
-  def makeMove(gameState: GameState): GameState = {
-    val move = search(gameState, 4)._1
+  /** Evaluate game state based on availability of capture moves.  Taken
+    * wholesale from the chess AI video.  All credit to Sebastian Lague.
+    *
+    * Captures aren't typically forces, so see what the eval is before making a
+    * capture.  Otherwise if only bad captures are available, the position will
+    * be evaluated as bad, even if good non-capture moves exist.
+    *
+    * @param gameState
+    * @param alpha - state of alpha mid-pruning algorithm
+    * @param beta - state of beta mid-pruning algorithm (at leaf node)
+    * @return eval based on capture availability
+    */
+  def searchAllCaptures(
+      gameState: GameState,
+      alpha: Int,
+      beta: Int
+  ): Int = {
+    var eval = score(gameState)
+    if (eval >= beta) return beta
 
-    updateGameState(gameState, move)
+    var newAlpha = max(alpha, eval)
+
+    implicit val moveOrdering: Ordering[MoveLike] = Ordering.by(moveScore(gameState)).reverse
+    val captureMoves = getAllLegalMoves(gameState)
+      .filter({
+        case NoMove                          => false
+        case Move(from, to, promotePawnType) => !gameState.squares(to).isBlank
+      })
+      .sorted
+
+    for (move <- captureMoves) {
+      val updatedGameState = updateGameState(gameState, move)
+      eval = -searchAllCaptures(updatedGameState, -beta, -newAlpha)
+
+      if (eval >= beta) return beta
+
+      newAlpha = max(newAlpha, eval)
+    }
+
+    newAlpha
   }
 }
