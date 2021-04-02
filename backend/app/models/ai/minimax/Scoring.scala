@@ -27,4 +27,33 @@ object Scoring {
       })
       .sum
   }
+
+  def moveScore(gameState: GameState)(moveLike: MoveLike): Int = moveLike match {
+    case NoMove => 0
+    case Move(from, to, _) => {
+      var moveScoreGuess = 0
+      val movePieceType = gameState.squares(from) match {
+        case Blank               => throw new Exception("Eyy, tryan'a move a blank square")
+        case Piece(_, pieceType) => pieceType
+      }
+
+      gameState.squares(to) match {
+        case Blank => ()
+        case Piece(_, pieceType) =>
+          moveScoreGuess += 10 * pieceScores(pieceType) - pieceScores(movePieceType)
+      }
+
+      if (
+        movePieceType == Pawn && (
+          (gameState.whoseMove == White && to.row == 0) ||
+            (gameState.whoseMove == Black && to.row == 7)
+        )
+      ) moveScoreGuess += pieceScores(movePieceType)
+
+      if (gameState.opponentAttackSquares(to))
+        moveScoreGuess -= pieceScores(movePieceType)
+
+      moveScoreGuess
+    }
+  }
 }

@@ -39,7 +39,8 @@ object AlphaBeta {
       else return (NoMove, -thisScore)
     }
 
-    val moves = getAllLegalMoves(gameState)
+    implicit val moveOrdering: Ordering[MoveLike] = Ordering.by(moveScore(gameState)).reverse
+    val moves = getAllLegalMoves(gameState).sorted
 
     if (moves.isEmpty) {
       if (isCurrentPlayerInCheck(gameState)) (NoMove, negativeInfinity)
@@ -94,30 +95,4 @@ object AlphaBeta {
 
     updateGameState(gameState, move)
   }
-
-  private def moveOrder(gameState: GameState): Ordering[Move] = Ordering.by(move => {
-    var moveScoreGuess = 0
-    val movePieceType = gameState.squares(move.from) match {
-      case Blank               => throw new Exception("Eyy, tryan'a move a blank square")
-      case Piece(_, pieceType) => pieceType
-    }
-
-    gameState.squares(move.to) match {
-      case Blank => ()
-      case Piece(_, pieceType) =>
-        moveScoreGuess += 10 * pieceScores(pieceType) - pieceScores(movePieceType)
-    }
-
-    if (
-      movePieceType == Pawn && (
-        (gameState.whoseMove == White && move.to.row == 0) ||
-          (gameState.whoseMove == Black && move.to.row == 7)
-      )
-    ) moveScoreGuess += pieceScores(movePieceType)
-
-    if (gameState.opponentAttackSquares(move.to))
-      moveScoreGuess -= pieceScores(movePieceType)
-
-    moveScoreGuess
-  })
 }
