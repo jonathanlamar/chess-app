@@ -32,7 +32,7 @@ object Pieces {
   }
 
   def getAttackingPieces(gameState: GameState, attackColor: Color): List[(PieceType, Position)] = {
-    val kingColor = if (attackColor == White) Black else White
+    val kingColor = attackColor.reverse
     val kingPos = getKingPosition(gameState, kingColor) match {
       case None        => throw new Exception("No king to attack")
       case Some(value) => value

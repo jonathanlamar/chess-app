@@ -42,7 +42,7 @@ object ValidMoves {
         }
       case None => throw new Exception("No king on board.")
     }
-    val opponentColor = if (gameState.whoseMove == White) Black else White
+    val opponentColor = gameState.whoseMove.reverse
     var pseudoLegalMoves = allPossibleMoves(gameState, pos)
 
     // Short circuit for king case
@@ -234,7 +234,7 @@ object ValidMoves {
   }
 
   def getCastlePositions(gameState: GameState, color: Color): List[Position] = {
-    val otherColor = if (color == White) Black else White
+    val otherColor = gameState.whoseMove.reverse
     lazy val attackSquares = getAttackSquares(gameState, otherColor)
 
     val canCastle = color match {

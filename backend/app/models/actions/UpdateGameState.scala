@@ -169,10 +169,7 @@ object UpdateGameState {
   }
 
   def updateWhoseMove(gameState: GameState): GameState = {
-    gameState.whoseMove match {
-      case Black => gameState.updateWhoseMove(White)
-      case White => gameState.updateWhoseMove(Black)
-    }
+    gameState.updateWhoseMove(gameState.whoseMove.reverse)
   }
 
   def maybeHandlePawnPromotion(

@@ -10,7 +10,7 @@ object Check {
         .filter({ case (k: Square, v: List[Position]) => k.color == color })
         .toList
         .flatMap({ case (p, poss) => poss.map((p, _)) })
-    val kingColor = if (color == White) Black else White
+    val kingColor = color.reverse
     val kingPosition = gameState.piecesIndex(Piece(kingColor, King)).headOption match {
       case None        => throw new Exception("No King position")
       case Some(value) => value
@@ -36,7 +36,7 @@ object Check {
       case None        => throw new Exception("No King position")
       case Some(value) => value
     }
-    val opponentColor = if (color == White) Black else White
+    val opponentColor = color.reverse
 
     val nwRay = getRaySquares(gameState, kingPosition, Position(-1, -1), color)
     val neRay = getRaySquares(gameState, kingPosition, Position(-1, 1), color)
