@@ -17,7 +17,7 @@ object ValidMoves {
       .toList
 
     def addPawnPromotion(move: (Position, Position)): List[Move] = {
-      gameState.squares(move._1.row)(move._1.col) match {
+      gameState.squares(move._1) match {
         case Blank => throw new Exception("Cannot move blank square")
         case Piece(color, Pawn) =>
           if ((color == Black && move._2.row == 7) || (color == White && move._2.row == 0)) {
@@ -76,7 +76,7 @@ object ValidMoves {
           if (posIsBlocking(gameState, pos, rayToKing)) {
             pseudoLegalMoves = pseudoLegalMoves.intersect(rayToKing.map(_._1))
           } else if (
-            gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, Pawn) &&
+            gameState.squares(pos) == Piece(gameState.whoseMove, Pawn) &&
             pseudoLegalMoves.contains(gameState.enPassantTarget) &&
             enPassantBlocking(gameState, pos, rayToKing)
           ) {
@@ -112,7 +112,7 @@ object ValidMoves {
       .range(0, 8)
       .map(kingPos + delta * _)
       .filter(_.isInBounds)
-      .map(p => (p, gameState.squares(p.row)(p.col)))
+      .map(p => (p, gameState.squares(p)))
   }
 
   def posIsBlocking(
@@ -157,7 +157,7 @@ object ValidMoves {
       .range(0, 8)
       .map(pos + delta * _)
       .filter(_.isInBounds)
-      .map(p => (p, gameState.squares(p.row)(p.col)))
+      .map(p => (p, gameState.squares(p)))
 
     val nonKingSquares = rayPieces.takeWhile(_._2 != Piece(gameState.whoseMove, King))
     val kingSquares = rayPieces
@@ -172,7 +172,7 @@ object ValidMoves {
 
   def isCastleMove(gameState: GameState, pos: Position, newPos: Position): Boolean = {
     if (
-      gameState.squares(pos.row)(pos.col) == Piece(gameState.whoseMove, King) &&
+      gameState.squares(pos) == Piece(gameState.whoseMove, King) &&
       pos.row == newPos.row &&
       abs(pos.col - newPos.col) == 2
     ) true
@@ -184,7 +184,7 @@ object ValidMoves {
       pos: Position,
       captureSameColor: Boolean = false
   ): List[Position] = {
-    gameState.squares(pos.row)(pos.col) match {
+    gameState.squares(pos) match {
       case Piece(color, pieceType) => {
         val stopColor = if (captureSameColor) null else color
 
@@ -227,8 +227,8 @@ object ValidMoves {
 
     doBasicFilters(pos, color, allMoveDeltas)
       .filter(p =>
-        gameState.squares(p.row)(p.col).isBlank ||
-          gameState.squares(p.row)(p.col).color != color ||
+        gameState.squares(p).isBlank ||
+          gameState.squares(p).color != color ||
           captureSameColor
       )
   }
@@ -271,7 +271,7 @@ object ValidMoves {
       if (isInitialPawn(pos, color)) List(Position(-1, 0), Position(-2, 0))
       else List(Position(-1, 0))
     val normalMovePieces = doBasicFilters(pos, color, deltas)
-      .map(p => (p, gameState.squares(p.row)(p.col)))
+      .map(p => (p, gameState.squares(p)))
       .takeWhile(_._2.isBlank)
       .map(_._1)
 
@@ -294,8 +294,8 @@ object ValidMoves {
   ): List[Position] = {
     doBasicFilters(pos, color, List(Position(-1, -1), Position(-1, 1)))
       .filter(p =>
-        (!gameState.squares(p.row)(p.col).isBlank &&
-          gameState.squares(p.row)(p.col).color != color) ||
+        (!gameState.squares(p).isBlank &&
+          gameState.squares(p).color != color) ||
           p == gameState.enPassantTarget ||
           captureSameColor
       )
@@ -320,8 +320,8 @@ object ValidMoves {
 
     doBasicFilters(pos, color, deltas)
       .filter(p =>
-        gameState.squares(p.row)(p.col).isBlank ||
-          gameState.squares(p.row)(p.col).color != color ||
+        gameState.squares(p).isBlank ||
+          gameState.squares(p).color != color ||
           captureSameColor
       )
   }
@@ -397,7 +397,7 @@ object ValidMoves {
       .range(1, 8)
       .map(pos + delta * _)
       .filter(_.isInBounds)
-      .map(p => (p, gameState.squares(p.row)(p.col)))
+      .map(p => (p, gameState.squares(p)))
 
     val blankRaySquares = rayPieces.takeWhile(_._2.isBlank)
     val otherColorSquares =

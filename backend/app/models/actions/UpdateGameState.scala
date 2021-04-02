@@ -13,8 +13,8 @@ object UpdateGameState {
       case Move(movingPiecePos, destinationPos, promotePawnPieceType) =>
         if (movingPiecePos == destinationPos) return gameState
 
-        val movingPiece = gameState.squares(movingPiecePos.row)(movingPiecePos.col)
-        val destinationSquare = gameState.squares(destinationPos.row)(destinationPos.col)
+        val movingPiece = gameState.squares(movingPiecePos)
+        val destinationSquare = gameState.squares(destinationPos)
 
         movingPiece match {
           case Blank => throw new Exception("Cannot move blank square")
@@ -35,7 +35,7 @@ object UpdateGameState {
   }
 
   def promotePawn(gameState: GameState, pawnPos: Position, pieceType: PieceType): GameState = {
-    gameState.squares(pawnPos.row)(pawnPos.col) match {
+    gameState.squares(pawnPos) match {
       case Blank              => throw new Exception("No piece at pawn location")
       case Piece(color, Pawn) => gameState.updateSquare(pawnPos, Piece(color, pieceType))
       case _                  => throw new Exception("Piece at pawn location is not a pawn")
@@ -58,9 +58,7 @@ object UpdateGameState {
       // En passant capturing is the weird edge case
       piece.color match {
         case Black => {
-          gameState.squares(gameState.enPassantTarget.row - 1)(
-            gameState.enPassantTarget.col
-          ) match {
+          gameState.squares(gameState.enPassantTarget - Position(1, 0)) match {
             case p: Piece => {
               gameState
                 .addBlackCapturedPiece(p)
@@ -70,9 +68,7 @@ object UpdateGameState {
           }
         }
         case White => {
-          gameState.squares(gameState.enPassantTarget.row + 1)(
-            gameState.enPassantTarget.col
-          ) match {
+          gameState.squares(gameState.enPassantTarget + Position(1, 0)) match {
             case p: Piece => {
               gameState
                 .addWhiteCapturedPiece(p)

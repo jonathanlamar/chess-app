@@ -82,7 +82,7 @@ object Check {
     )
       .map(_ + kingPosition)
       .filter(_.isInBounds)
-      .map(pos => gameState.squares(pos.row)(pos.col))
+      .map(pos => gameState.squares(pos))
 
     if (knightMoveSquares.contains(Piece(opponentColor, Knight))) return true
 

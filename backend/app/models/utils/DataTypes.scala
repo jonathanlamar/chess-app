@@ -198,6 +198,8 @@ object DataTypes {
         .toMap
     }
 
+    def squares(pos: Position): Square = squares(pos.row)(pos.col)
+
     // TODO: These are ugly.  Should really use builder pattern here.
     def updateSquare(pos: Position, square: Square): GameState = {
       val squares =
