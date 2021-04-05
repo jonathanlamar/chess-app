@@ -18,17 +18,22 @@ object AlphaBeta {
     updateGameState(gameState, move)
   }
 
-  // TODO: Understand what alpha and beta are.
   /** Minmax algorithm with alpha/beta pruning. See
     * https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
+    *
+    * Alpha beta pruning differs from standard minmax by pruning branches that
+    * cannot affect the outcome.  It does this by keeping track of the maximum
+    * and minimum scores asured to the minimizing and maximizing players,
+    * respectively.
+    *
     * This algorithm is inherently serial, since the search of nodes depends on
     * knowledge of previous searched nodes.
     *
     * @param gameState - current state of play
     * @param depth - max depth of tree to search, where 0 means score current game
-    * @param alpha
-    * @param beta
-    * @param maximizingPlayer
+    * @param alpha - the minimum score that the maximizing player is assured of
+    * @param beta - the maximum score that the minimizing player is assured of
+    * @param maximizingPlayer - whether we are maximizing advantage or minimizing disadvantage
     * @return tuple containing best move and its advantage
     */
   def search(
