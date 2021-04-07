@@ -33,13 +33,6 @@ object Scoring {
       })
       .sum
 
-    // FIXME: This greatly degrades performance.
-    // val numEnemyPieces = gameState.piecesIndex.view
-    //   .filterKeys(_.color != gameState.whoseMove)
-    //   .mapValues(_.length)
-    //   .values
-    //   .sum
-
     // Maybe don't calculate endgame weight until we are close to the endgame.
     if (numEnemyPieces < 5) {
       val endgameWeight = 1.0 - (numEnemyPieces.toDouble / 16.0)

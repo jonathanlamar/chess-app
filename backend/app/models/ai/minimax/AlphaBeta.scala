@@ -17,7 +17,7 @@ class AlphaBeta {
 
   def makeMove(gameState: GameState): GameState = {
     val hashVal = zobristHashOb.computeHash(gameState)
-    val move = search(gameState, 5, hashVal = hashVal)._1
+    val move = search(gameState, 50, hashVal = hashVal)._1
 
     updateGameState(gameState, move)
   }
@@ -52,7 +52,12 @@ class AlphaBeta {
     if (depth == 0) {
       val thisScore =
         if (zobristHash.contains(hashVal)) zobristHash(hashVal)
-        else searchAllCaptures(gameState, alpha, beta)
+        else {
+          val score = searchAllCaptures(gameState, alpha, beta)
+
+          zobristHash.put(hashVal, score)
+          score
+        }
 
       if (maximizingPlayer) return (NoMove, thisScore)
       else return (NoMove, -thisScore)
@@ -75,8 +80,12 @@ class AlphaBeta {
         val updatedHash = zobristHashOb.updateHash(gameState, move, hashVal)
         val newScore =
           if (zobristHash.contains(updatedHash)) zobristHash(updatedHash)
-          else
-            search(updatedGameState, depth - 1, newAlpha, beta, false, updatedHash)._2
+          else {
+            val score = search(updatedGameState, depth - 1, newAlpha, beta, false, updatedHash)._2
+
+            zobristHash.put(updatedHash, score)
+            score
+          }
 
         if (newScore > bestScore) {
           bestScore = newScore
@@ -100,8 +109,12 @@ class AlphaBeta {
         val updatedHash = zobristHashOb.updateHash(gameState, move, hashVal)
         val newScore =
           if (zobristHash.contains(updatedHash)) zobristHash(updatedHash)
-          else
-            search(updatedGameState, depth - 1, alpha, newBeta, true, updatedHash)._2
+          else {
+            val score = search(updatedGameState, depth - 1, alpha, newBeta, true, updatedHash)._2
+
+            zobristHash.put(updatedHash, score)
+            score
+          }
 
         if (newScore < bestScore) {
           bestScore = newScore

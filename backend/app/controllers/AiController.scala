@@ -25,6 +25,7 @@ class AiController @Inject() (val controllerComponents: ControllerComponents)
       .and((JsPath \ "blackCapturedPieces").write[List[Piece]])(
         unlift(JsonFriendlyGameState.unapply)
       )
+  val alphaBeta = new AlphaBeta()
 
   // I don't understand this syntax very well, but this is the only way I know
   // to coax the desired format.
@@ -46,7 +47,6 @@ class AiController @Inject() (val controllerComponents: ControllerComponents)
   def getRandom(fenString: String): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
 
-    val alphaBeta = new AlphaBeta()
     val updatedBoard: GameState = alphaBeta.makeMove(gameState)
 
     // TODO: Try logic for exception handling
