@@ -2,18 +2,22 @@ package models.ai.minimax
 
 import models.actions.UpdateGameState.updateGameState
 import models.ai.minimax.Scoring._
+import models.ai.minimax.Zobrist
 import models.rules.Check.isCurrentPlayerInCheck
 import models.rules.ValidMoves._
 import models.utils.DataTypes._
-import scala.collection.parallel.ParSeq
+import scala.collection.mutable.HashMap
 import scala.math.{min, max, abs}
 
-object AlphaBeta {
+class AlphaBeta {
   val negativeInfinity = Int.MinValue
   val positiveInfinity = Int.MaxValue
+  var zobristHash: HashMap[Long, Int] = new HashMap()
+  val zobristHashOb = new Zobrist()
 
   def makeMove(gameState: GameState): GameState = {
-    val move = search(gameState, 4)._1
+    val hashVal = zobristHashOb.computeHash(gameState)
+    val move = search(gameState, 5, hashVal = hashVal)._1
 
     updateGameState(gameState, move)
   }
@@ -34,6 +38,7 @@ object AlphaBeta {
     * @param alpha - the minimum score that the maximizing player is assured of
     * @param beta - the maximum score that the minimizing player is assured of
     * @param maximizingPlayer - whether we are maximizing advantage or minimizing disadvantage
+    * @param hashVal - Value of Zobrist hash of initial game state
     * @return tuple containing best move and its advantage
     */
   def search(
@@ -41,10 +46,13 @@ object AlphaBeta {
       depth: Int,
       alpha: Int = negativeInfinity,
       beta: Int = positiveInfinity,
-      maximizingPlayer: Boolean = true
+      maximizingPlayer: Boolean = true,
+      hashVal: Long
   ): (MoveLike, Int) = {
     if (depth == 0) {
-      val thisScore = searchAllCaptures(gameState, alpha, beta)
+      val thisScore =
+        if (zobristHash.contains(hashVal)) zobristHash(hashVal)
+        else searchAllCaptures(gameState, alpha, beta)
 
       if (maximizingPlayer) return (NoMove, thisScore)
       else return (NoMove, -thisScore)
@@ -64,7 +72,11 @@ object AlphaBeta {
       for (move <- moves) {
 
         val updatedGameState = updateGameState(gameState, move)
-        val (_, newScore) = search(updatedGameState, depth - 1, newAlpha, beta, false)
+        val updatedHash = zobristHashOb.updateHash(gameState, move, hashVal)
+        val newScore =
+          if (zobristHash.contains(updatedHash)) zobristHash(updatedHash)
+          else
+            search(updatedGameState, depth - 1, newAlpha, beta, false, updatedHash)._2
 
         if (newScore > bestScore) {
           bestScore = newScore
@@ -85,7 +97,11 @@ object AlphaBeta {
       for (move <- moves) {
 
         val updatedGameState = updateGameState(gameState, move)
-        val (_, newScore) = search(updatedGameState, depth - 1, alpha, newBeta, true)
+        val updatedHash = zobristHashOb.updateHash(gameState, move, hashVal)
+        val newScore =
+          if (zobristHash.contains(updatedHash)) zobristHash(updatedHash)
+          else
+            search(updatedGameState, depth - 1, alpha, newBeta, true, updatedHash)._2
 
         if (newScore < bestScore) {
           bestScore = newScore
@@ -113,11 +129,7 @@ object AlphaBeta {
     * @param beta - state of beta mid-pruning algorithm (at leaf node)
     * @return eval based on capture availability
     */
-  def searchAllCaptures(
-      gameState: GameState,
-      alpha: Int,
-      beta: Int
-  ): Int = {
+  def searchAllCaptures(gameState: GameState, alpha: Int, beta: Int): Int = {
     var eval = score(gameState)
     if (eval >= beta) return beta
 

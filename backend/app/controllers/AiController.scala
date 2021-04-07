@@ -46,7 +46,8 @@ class AiController @Inject() (val controllerComponents: ControllerComponents)
   def getRandom(fenString: String): Action[AnyContent] = Action {
     val gameState = GameState(URLDecoder.decode(fenString))
 
-    val updatedBoard: GameState = AlphaBeta.makeMove(gameState)
+    val alphaBeta = new AlphaBeta()
+    val updatedBoard: GameState = alphaBeta.makeMove(gameState)
 
     // TODO: Try logic for exception handling
     val json = Json.toJson(JsonFriendlyGameState(updatedBoard))
