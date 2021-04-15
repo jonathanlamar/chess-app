@@ -17,7 +17,7 @@ class AlphaBeta {
 
   def makeMove(gameState: GameState): GameState = {
     val hashVal = zobristHashOb.computeHash(gameState)
-    val move = search(gameState, 50, hashVal = hashVal)._1
+    val move = search(gameState, 20, hashVal = hashVal)._1
 
     updateGameState(gameState, move)
   }
