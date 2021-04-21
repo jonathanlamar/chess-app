@@ -6,17 +6,17 @@ import scala.util.Random.nextLong
 class Zobrist {
   private val pieceMap = Map(
     Piece(Black, Pawn) -> 0,
-    Piece(Black, Knight) -> 0,
-    Piece(Black, Bishop) -> 0,
-    Piece(Black, Rook) -> 0,
-    Piece(Black, Queen) -> 0,
-    Piece(Black, King) -> 0,
-    Piece(White, Pawn) -> 0,
-    Piece(White, Knight) -> 0,
-    Piece(White, Bishop) -> 0,
-    Piece(White, Rook) -> 0,
-    Piece(White, Queen) -> 0,
-    Piece(White, King) -> 0
+    Piece(Black, Knight) -> 1,
+    Piece(Black, Bishop) -> 2,
+    Piece(Black, Rook) -> 3,
+    Piece(Black, Queen) -> 4,
+    Piece(Black, King) -> 5,
+    Piece(White, Pawn) -> 6,
+    Piece(White, Knight) -> 7,
+    Piece(White, Bishop) -> 8,
+    Piece(White, Rook) -> 9,
+    Piece(White, Queen) -> 10,
+    Piece(White, King) -> 11
   )
 
   private val table = List.fill(8, 8, 12)(nextLong())
